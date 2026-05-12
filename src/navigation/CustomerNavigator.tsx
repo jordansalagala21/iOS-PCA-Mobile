@@ -1,17 +1,76 @@
-import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { AppointmentsScreen } from '../screens/customer/AppointmentsScreen';
+import { BookScreen } from '../screens/customer/BookScreen';
 import { HomeScreen } from '../screens/customer/HomeScreen';
+import { NotificationsScreen } from '../screens/customer/NotificationsScreen';
+import { ProfileScreen } from '../screens/customer/ProfileScreen';
 
-export type CustomerStackParamList = {
+export type CustomerTabParamList = {
   Home: undefined;
+  Book: undefined;
+  Appointments: undefined;
+  Notifications: undefined;
 };
 
-const Stack = createNativeStackNavigator<CustomerStackParamList>();
+export type CustomerRootStackParamList = {
+  Tabs: NavigatorScreenParams<CustomerTabParamList>;
+  Profile: undefined;
+};
 
-export function CustomerStackNavigator() {
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const ICONS: Record<keyof CustomerTabParamList, [IconName, IconName]> = {
+  Home: ['home', 'home-outline'],
+  Book: ['calendar', 'calendar-outline'],
+  Appointments: ['time', 'time-outline'],
+  Notifications: ['notifications', 'notifications-outline'],
+};
+
+const Tab = createBottomTabNavigator<CustomerTabParamList>();
+const Stack = createNativeStackNavigator<CustomerRootStackParamList>();
+
+function CustomerTabs() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={HomeScreen} />
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          const [active, inactive] = ICONS[route.name as keyof CustomerTabParamList];
+          return <Ionicons name={focused ? active : inactive} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#E94560',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#F3F4F6',
+          borderTopWidth: 1,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        headerStyle: { backgroundColor: '#1A1A2E' },
+        headerTintColor: '#FFFFFF',
+        headerTitleStyle: { fontWeight: '700', fontSize: 17 },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Book" component={BookScreen} options={{ title: 'Book a Service' }} />
+      <Tab.Screen name="Appointments" component={AppointmentsScreen} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export function CustomerNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs" component={CustomerTabs} />
+      <Stack.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ presentation: 'modal' }}
+      />
     </Stack.Navigator>
   );
 }
