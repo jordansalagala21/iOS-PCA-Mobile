@@ -3,18 +3,11 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const STATS = [
-  { label: 'Revenue (MTD)', value: '$3,240', change: '+12%', up: true, icon: 'cash-outline' as const },
-  { label: 'Jobs This Month', value: '28', change: '+4', up: true, icon: 'briefcase-outline' as const },
-  { label: 'Avg. Ticket', value: '$115', change: '+8%', up: true, icon: 'trending-up-outline' as const },
-  { label: 'Cancellations', value: '2', change: '-1', up: false, icon: 'close-circle-outline' as const },
-];
-
-const TOP_SERVICES = [
-  { name: 'Full Detail', count: 11, pct: 0.39 },
-  { name: 'Basic Wash', count: 8, pct: 0.29 },
-  { name: 'Ceramic Coat', count: 5, pct: 0.18 },
-  { name: 'Paint Correct', count: 4, pct: 0.14 },
+const STAT_DEFS = [
+  { label: 'Revenue (MTD)', icon: 'cash-outline' as const },
+  { label: 'Jobs This Month', icon: 'briefcase-outline' as const },
+  { label: 'Avg. Ticket', icon: 'trending-up-outline' as const },
+  { label: 'Cancellations', icon: 'close-circle-outline' as const },
 ];
 
 export function AnalyticsScreen() {
@@ -22,38 +15,24 @@ export function AnalyticsScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.grid}>
-          {STATS.map((s) => (
+          {STAT_DEFS.map((s) => (
             <View key={s.label} style={styles.statCard}>
               <View style={styles.statTop}>
                 <View style={styles.statIconWrap}>
                   <Ionicons name={s.icon} size={18} color="#E94560" />
                 </View>
-                <View style={[styles.changeBadge, { backgroundColor: s.up ? '#D1FAE5' : '#FEE2E2' }]}>
-                  <Text style={[styles.changeText, { color: s.up ? '#059669' : '#DC2626' }]}>
-                    {s.change}
-                  </Text>
-                </View>
               </View>
-              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statValue}>—</Text>
               <Text style={styles.statLabel}>{s.label}</Text>
             </View>
           ))}
         </View>
 
         <Text style={styles.sectionTitle}>Top Services</Text>
-        <View style={styles.servicesCard}>
-          {TOP_SERVICES.map((s, i) => (
-            <View key={s.name}>
-              {i > 0 && <View style={styles.divider} />}
-              <View style={styles.serviceRow}>
-                <Text style={styles.serviceName}>{s.name}</Text>
-                <Text style={styles.serviceCount}>{s.count} jobs</Text>
-              </View>
-              <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${s.pct * 100}%` }]} />
-              </View>
-            </View>
-          ))}
+        <View style={styles.emptyCard}>
+          <Ionicons name="bar-chart-outline" size={36} color="#D1D5DB" />
+          <Text style={styles.emptyTitle}>No data yet</Text>
+          <Text style={styles.emptySub}>Analytics will populate as appointments are completed</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -84,25 +63,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  changeBadge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, alignSelf: 'flex-start' },
-  changeText: { fontSize: 11, fontWeight: '700' },
-  statValue: { fontSize: 24, fontWeight: '800', color: '#1A1A2E' },
+  statValue: { fontSize: 24, fontWeight: '800', color: '#D1D5DB' },
   statLabel: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E', marginBottom: 12 },
-  servicesCard: {
+  emptyCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    padding: 16,
+    padding: 40,
+    alignItems: 'center',
+    gap: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
   },
-  divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 14 },
-  serviceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  serviceName: { fontSize: 14, fontWeight: '600', color: '#1A1A2E' },
-  serviceCount: { fontSize: 13, color: '#6B7280' },
-  barTrack: { height: 6, backgroundColor: '#F3F4F6', borderRadius: 3 },
-  barFill: { height: 6, backgroundColor: '#E94560', borderRadius: 3 },
+  emptyTitle: { fontSize: 15, fontWeight: '600', color: '#9CA3AF' },
+  emptySub: { fontSize: 13, color: '#D1D5DB', textAlign: 'center' },
 });

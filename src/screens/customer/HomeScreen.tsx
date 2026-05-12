@@ -2,23 +2,45 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { CustomerRootStackParamList, CustomerTabParamList } from '../../navigation/CustomerNavigator';
+import { db } from '../../services/firebase';
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<CustomerTabParamList>,
   NativeStackNavigationProp<CustomerRootStackParamList>
 >;
 
-const SERVICES = [
-  { icon: 'sparkles' as const, label: 'Basic Wash', price: '$49' },
-  { icon: 'star' as const, label: 'Full Detail', price: '$149' },
-  { icon: 'shield-checkmark' as const, label: 'Ceramic Coat', price: '$599' },
-  { icon: 'color-palette' as const, label: 'Paint Correct', price: '$299' },
-];
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+type ServiceDoc = {
+  id: string;
+  name: string;
+  priceFrom: number;
+  icon: string;
+};
+
+const ICON_MAP: Record<string, IoniconsName> = {
+  sparkles: 'sparkles-outline',
+  star: 'star-outline',
+  shield: 'shield-checkmark-outline',
+  palette: 'color-palette-outline',
+};
+
+function serviceIconName(icon: string): IoniconsName {
+  return ICON_MAP[icon] ?? 'sparkles-outline';
+}
 
 const QUICK_ACTIONS = [
   {
@@ -55,6 +77,29 @@ export function HomeScreen() {
   const navigation = useNavigation<Nav>();
   const firstName = user?.displayName?.split(' ')[0] ?? 'there';
 
+  const [services, setServices] = useState<ServiceDoc[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, 'services'), orderBy('priceFrom', 'asc'));
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setServices(
+          snap.docs.map((d) => ({
+            id: d.id,
+            name: d.data().name ?? '',
+            priceFrom: d.data().priceFrom ?? 0,
+            icon: d.data().icon ?? 'sparkles',
+          })),
+        );
+        setServicesLoading(false);
+      },
+      () => setServicesLoading(false),
+    );
+    return unsub;
+  }, []);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -81,7 +126,6 @@ export function HomeScreen() {
           onPress={() => navigation.navigate('Book')}
           activeOpacity={0.92}
         >
-          {/* Decorative glow accents */}
           <View style={styles.shineCircleLarge} />
           <View style={styles.shineCircleSmall} />
 
@@ -142,24 +186,31 @@ export function HomeScreen() {
             <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.servicesGrid}>
-          {SERVICES.map((s) => (
-            <TouchableOpacity
-              key={s.label}
-              style={styles.serviceCard}
-              onPress={() => navigation.navigate('Book')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.priceBadge}>
-                <Text style={styles.priceBadgeText}>from {s.price}</Text>
-              </View>
-              <View style={styles.serviceIconWrapper}>
-                <Ionicons name={s.icon} size={28} color="#E94560" />
-              </View>
-              <Text style={styles.serviceLabel}>{s.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+
+        {servicesLoading ? (
+          <View style={styles.servicesLoader}>
+            <ActivityIndicator color="#E94560" />
+          </View>
+        ) : (
+          <View style={styles.servicesGrid}>
+            {services.map((s) => (
+              <TouchableOpacity
+                key={s.id}
+                style={styles.serviceCard}
+                onPress={() => navigation.navigate('Book')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.priceBadge}>
+                  <Text style={styles.priceBadgeText}>from ${s.priceFrom}</Text>
+                </View>
+                <View style={styles.serviceIconWrapper}>
+                  <Ionicons name={serviceIconName(s.icon)} size={28} color="#E94560" />
+                </View>
+                <Text style={styles.serviceLabel}>{s.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -376,6 +427,11 @@ const styles = StyleSheet.create({
   },
 
   // ── Services Grid ─────────────────────────────────────────────────────────
+  servicesLoader: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   servicesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

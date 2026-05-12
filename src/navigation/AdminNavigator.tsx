@@ -4,10 +4,12 @@ import React from 'react';
 import { AnalyticsScreen } from '../screens/admin/AnalyticsScreen';
 import { CustomersScreen } from '../screens/admin/CustomersScreen';
 import { PromotionsScreen } from '../screens/admin/PromotionsScreen';
+import { ServicesScreen } from '../screens/admin/ServicesScreen';
 import { TasksScreen } from '../screens/admin/TasksScreen';
 
 export type AdminTabParamList = {
   Tasks: undefined;
+  Services: undefined;
   Analytics: undefined;
   Promotions: undefined;
   Customers: undefined;
@@ -17,6 +19,7 @@ type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const ICONS: Record<keyof AdminTabParamList, [IconName, IconName]> = {
   Tasks: ['list', 'list-outline'],
+  Services: ['pricetags', 'pricetags-outline'],
   Analytics: ['bar-chart', 'bar-chart-outline'],
   Promotions: ['pricetag', 'pricetag-outline'],
   Customers: ['people', 'people-outline'],
@@ -46,6 +49,7 @@ export function AdminNavigator() {
       })}
     >
       <Tab.Screen name="Tasks" component={TasksScreen} />
+      <Tab.Screen name="Services" component={ServicesScreen} options={{ title: 'Services' }} />
       <Tab.Screen name="Analytics" component={AnalyticsScreen} />
       <Tab.Screen name="Promotions" component={PromotionsScreen} />
       <Tab.Screen name="Customers" component={CustomersScreen} />

@@ -4,7 +4,7 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { AppointmentsScreen } from '../screens/customer/AppointmentsScreen';
-import { BookScreen } from '../screens/customer/BookScreen';
+import { BookingScreen } from '../screens/customer/BookingScreen';
 import { HomeScreen } from '../screens/customer/HomeScreen';
 import { NotificationsScreen } from '../screens/customer/NotificationsScreen';
 import { ProfileScreen } from '../screens/customer/ProfileScreen';
@@ -55,7 +55,7 @@ function CustomerTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Book" component={BookScreen} options={{ title: 'Book a Service' }} />
+      <Tab.Screen name="Book" component={BookingScreen} options={{ title: 'Book a Service' }} />
       <Tab.Screen name="Appointments" component={AppointmentsScreen} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />
     </Tab.Navigator>
