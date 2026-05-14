@@ -1,7 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigatorScreenParams } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { AdminNotificationBell } from '../components/AdminNotificationBell';
 import { AnalyticsScreen } from '../screens/admin/AnalyticsScreen';
+import { CustomerDetailScreen } from '../screens/admin/CustomerDetailScreen';
 import { CustomersScreen } from '../screens/admin/CustomersScreen';
 import { PromotionsScreen } from '../screens/admin/PromotionsScreen';
 import { ServicesScreen } from '../screens/admin/ServicesScreen';
@@ -15,6 +19,11 @@ export type AdminTabParamList = {
   Customers: undefined;
 };
 
+export type AdminRootStackParamList = {
+  Tabs: NavigatorScreenParams<AdminTabParamList>;
+  CustomerDetail: { uid: string; customerName: string };
+};
+
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const ICONS: Record<keyof AdminTabParamList, [IconName, IconName]> = {
@@ -26,8 +35,9 @@ const ICONS: Record<keyof AdminTabParamList, [IconName, IconName]> = {
 };
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
+const Stack = createNativeStackNavigator<AdminRootStackParamList>();
 
-export function AdminNavigator() {
+function AdminTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -48,11 +58,28 @@ export function AdminNavigator() {
         headerTitleStyle: { fontWeight: '700', fontSize: 17 },
       })}
     >
-      <Tab.Screen name="Tasks" component={TasksScreen} />
+      <Tab.Screen
+        name="Tasks"
+        component={TasksScreen}
+        options={{ headerRight: () => <AdminNotificationBell /> }}
+      />
       <Tab.Screen name="Services" component={ServicesScreen} options={{ title: 'Services' }} />
       <Tab.Screen name="Analytics" component={AnalyticsScreen} />
       <Tab.Screen name="Promotions" component={PromotionsScreen} />
       <Tab.Screen name="Customers" component={CustomersScreen} />
     </Tab.Navigator>
+  );
+}
+
+export function AdminNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs" component={AdminTabs} />
+      <Stack.Screen
+        name="CustomerDetail"
+        component={CustomerDetailScreen}
+        options={{ presentation: 'modal' }}
+      />
+    </Stack.Navigator>
   );
 }

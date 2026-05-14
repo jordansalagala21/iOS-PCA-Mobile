@@ -1,7 +1,7 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import React, { useState } from 'react';
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -12,55 +12,56 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { auth, db } from '../../services/firebase';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthStackParamList } from "../../navigation/AuthNavigator";
+import { auth, db } from "../../services/firebase";
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Signup'>;
+type Props = NativeStackScreenProps<AuthStackParamList, "Signup">;
 
 function toUserMessage(code: string): string {
   const map: Record<string, string> = {
-    'auth/email-already-in-use': 'An account with this email already exists.',
-    'auth/invalid-email': 'Invalid email address.',
-    'auth/weak-password': 'Password must be at least 6 characters.',
-    'auth/network-request-failed': 'Network error. Check your connection.',
-    'auth/operation-not-allowed':
-      'Email/password sign-in is not enabled. Enable it in the Firebase Console → Authentication → Sign-in methods.',
-    'auth/too-many-requests': 'Too many attempts. Try again later.',
-    'auth/invalid-api-key': 'Invalid Firebase API key. Check your firebase config.',
+    "auth/email-already-in-use": "An account with this email already exists.",
+    "auth/invalid-email": "Invalid email address.",
+    "auth/weak-password": "Password must be at least 6 characters.",
+    "auth/network-request-failed": "Network error. Check your connection.",
+    "auth/operation-not-allowed":
+      "Email/password sign-in is not enabled. Enable it in the Firebase Console → Authentication → Sign-in methods.",
+    "auth/too-many-requests": "Too many attempts. Try again later.",
+    "auth/invalid-api-key":
+      "Invalid Firebase API key. Check your firebase config.",
   };
   if (!map[code]) {
-    console.error('[SignupScreen] Unhandled Firebase error:', code);
+    console.error("[SignupScreen] Unhandled Firebase error:", code);
   }
   return map[code] ?? `Something went wrong (${code}). Please try again.`;
 }
 
 export function SignupScreen({ navigation }: Props) {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [vehicleMake, setVehicleMake] = useState('');
-  const [vehicleModel, setVehicleModel] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [vehicleMake, setVehicleMake] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSignup = async () => {
     if (!fullName.trim() || !email.trim() || !password || !phone.trim()) {
-      setError('Please fill in all required fields.');
+      setError("Please fill in all required fields.");
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError("Passwords do not match.");
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError("Password must be at least 6 characters.");
       return;
     }
-    setError('');
+    setError("");
     setLoading(true);
     try {
       const credential = await createUserWithEmailAndPassword(
@@ -69,17 +70,17 @@ export function SignupScreen({ navigation }: Props) {
         password,
       );
       await updateProfile(credential.user, { displayName: fullName.trim() });
-      await setDoc(doc(db, 'users', credential.user.uid), {
+      await setDoc(doc(db, "users", credential.user.uid), {
         fullName: fullName.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
         vehicleMake: vehicleMake.trim(),
         vehicleModel: vehicleModel.trim(),
-        role: 'customer',
+        role: "customer",
         createdAt: serverTimestamp(),
       });
     } catch (e: unknown) {
-      const code = (e as { code?: string }).code ?? '';
+      const code = (e as { code?: string }).code ?? "";
       setError(toUserMessage(code));
     } finally {
       setLoading(false);
@@ -87,9 +88,9 @@ export function SignupScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.kav}
       >
         <ScrollView
@@ -231,7 +232,10 @@ export function SignupScreen({ navigation }: Props) {
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Login")}
+              activeOpacity={0.7}
+            >
               <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
@@ -244,7 +248,7 @@ export function SignupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   kav: {
     flex: 1,
@@ -255,7 +259,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 36,
     paddingBottom: 32,
   },
@@ -263,40 +267,40 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 20,
-    backgroundColor: '#1A1A2E',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#1A1A2E",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
-    shadowColor: '#1A1A2E',
+    shadowColor: "#1A1A2E",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
   logoLetters: {
-    color: '#E94560',
+    color: "#E94560",
     fontSize: 26,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 1,
   },
   appName: {
     fontSize: 26,
-    fontWeight: '800',
-    color: '#1A1A2E',
+    fontWeight: "800",
+    color: "#1A1A2E",
     letterSpacing: 0.3,
   },
   tagline: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
     marginTop: 4,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-    shadowColor: '#000',
+    borderColor: "#F3F4F6",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -304,15 +308,15 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#9CA3AF',
+    fontWeight: "700",
+    color: "#9CA3AF",
     letterSpacing: 1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     marginBottom: 16,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
     marginVertical: 20,
   },
   field: {
@@ -322,38 +326,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: "600",
+    color: "#374151",
     marginBottom: 8,
     letterSpacing: 0.2,
   },
   input: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
     borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    borderColor: "#E5E7EB",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1A1A2E',
+    color: "#1A1A2E",
   },
   errorText: {
     fontSize: 13,
-    color: '#DC2626',
+    color: "#DC2626",
     marginBottom: 16,
     marginTop: -4,
   },
   button: {
-    backgroundColor: '#E94560',
+    backgroundColor: "#E94560",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 8,
-    shadowColor: '#E94560',
+    shadowColor: "#E94560",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -363,24 +367,24 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.3,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 28,
   },
   footerText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   footerLink: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#E94560',
+    fontWeight: "700",
+    color: "#E94560",
   },
 });

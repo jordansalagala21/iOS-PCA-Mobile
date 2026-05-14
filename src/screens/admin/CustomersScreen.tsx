@@ -1,4 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -7,10 +9,14 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { AdminRootStackParamList } from '../../navigation/AdminNavigator';
 import { db } from '../../services/firebase';
+
+type Nav = NativeStackNavigationProp<AdminRootStackParamList>;
 
 type CustomerDoc = {
   id: string;
@@ -42,6 +48,7 @@ function formatDate(ts: CustomerDoc['createdAt']): string {
 }
 
 export function CustomersScreen() {
+  const navigation = useNavigation<Nav>();
   const [customers, setCustomers] = useState<CustomerDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,7 +135,12 @@ export function CustomersScreen() {
           </View>
         ) : (
           filtered.map((c) => (
-            <View key={c.id} style={styles.card}>
+            <TouchableOpacity
+              key={c.id}
+              style={styles.card}
+              onPress={() => navigation.navigate('CustomerDetail', { uid: c.id, customerName: c.fullName })}
+              activeOpacity={0.75}
+            >
               <View style={styles.cardRow}>
                 {/* Avatar */}
                 <View style={[styles.avatar, { backgroundColor: avatarBg(c.fullName) }]}>
@@ -170,7 +182,7 @@ export function CustomersScreen() {
                   ) : null}
                 </View>
               ) : null}
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
