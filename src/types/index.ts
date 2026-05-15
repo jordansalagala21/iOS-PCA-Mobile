@@ -7,6 +7,7 @@ export interface Service {
   duration: number;
   description: string;
   icon: string;
+  active: boolean;
   updatedAt: Timestamp | null;
 }
 

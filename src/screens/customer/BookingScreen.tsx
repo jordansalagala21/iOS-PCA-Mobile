@@ -163,8 +163,10 @@ export function BookingScreen() {
             duration: d.data().duration ?? 60,
             description: d.data().description ?? '',
             icon: d.data().icon ?? 'sparkles',
+            active: d.data().active !== false,
             updatedAt: d.data().updatedAt ?? null,
           }) as Service)
+          .filter((s) => s.active)
           .sort((a, b) => a.priceFrom - b.priceFrom);
         setServices(data);
       })

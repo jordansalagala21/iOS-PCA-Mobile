@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
+  addDoc,
   collection,
   doc,
   onSnapshot,
@@ -17,6 +18,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -28,15 +30,31 @@ import type { Service } from '../../types';
 import { seedServices } from '../../utils/seedServices';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
-type FormErrors = Partial<Record<'priceFrom' | 'duration' | 'description', string>>;
-type FormState = { priceFrom: string; duration: string; description: string };
+type EditFormErrors = Partial<Record<'priceFrom' | 'duration' | 'description', string>>;
+type EditFormState = { priceFrom: string; duration: string; description: string };
+type AddFormErrors = Partial<Record<'name' | 'description' | 'priceFrom' | 'duration', string>>;
+type AddFormState = {
+  name: string;
+  description: string;
+  priceFrom: string;
+  duration: string;
+  selectedIcon: string;
+  active: boolean;
+};
 
 const ICON_MAP: Record<string, IoniconsName> = {
   sparkles: 'sparkles-outline',
   star: 'star-outline',
   shield: 'shield-checkmark-outline',
   palette: 'color-palette-outline',
+  car: 'car-outline',
+  droplets: 'water-outline',
+  wrench: 'construct-outline',
+  zap: 'flash-outline',
 };
+
+const SELECTABLE_ICONS = ['sparkles', 'star', 'shield', 'palette', 'car', 'droplets', 'wrench', 'zap'];
+
 function serviceIconName(icon: string): IoniconsName {
   return ICON_MAP[icon] ?? 'sparkles-outline';
 }
@@ -49,6 +67,31 @@ function formatDuration(minutes: number): string {
   return `${h} hr ${m} min`;
 }
 
+function openSheet(slide: Animated.Value, backdrop: Animated.Value) {
+  slide.setValue(600);
+  backdrop.setValue(0);
+  Animated.parallel([
+    Animated.spring(slide, { toValue: 0, useNativeDriver: true, tension: 60, friction: 12 }),
+    Animated.timing(backdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
+  ]).start();
+}
+
+function closeSheet(slide: Animated.Value, backdrop: Animated.Value, onDone: () => void) {
+  Animated.parallel([
+    Animated.timing(slide, { toValue: 600, duration: 220, useNativeDriver: true }),
+    Animated.timing(backdrop, { toValue: 0, duration: 200, useNativeDriver: true }),
+  ]).start(onDone);
+}
+
+const DEFAULT_ADD_FORM: AddFormState = {
+  name: '',
+  description: '',
+  priceFrom: '',
+  duration: '',
+  selectedIcon: 'sparkles',
+  active: true,
+};
+
 // ── ServicesScreen ────────────────────────────────────────────────────────────
 
 export function ServicesScreen() {
@@ -58,13 +101,21 @@ export function ServicesScreen() {
 
   // Edit sheet state
   const [editingService, setEditingService] = useState<Service | null>(null);
-  const [form, setForm] = useState<FormState>({ priceFrom: '', duration: '', description: '' });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState<EditFormState>({ priceFrom: '', duration: '', description: '' });
+  const [editErrors, setEditErrors] = useState<EditFormErrors>({});
+  const [editSaving, setEditSaving] = useState(false);
 
-  // Bottom-sheet animation
-  const slideAnim = useRef(new Animated.Value(600)).current;
-  const backdropAnim = useRef(new Animated.Value(0)).current;
+  // Add sheet state
+  const [addVisible, setAddVisible] = useState(false);
+  const [addForm, setAddForm] = useState<AddFormState>(DEFAULT_ADD_FORM);
+  const [addErrors, setAddErrors] = useState<AddFormErrors>({});
+  const [addSaving, setAddSaving] = useState(false);
+
+  // Animation refs
+  const editSlide = useRef(new Animated.Value(600)).current;
+  const editBackdrop = useRef(new Animated.Value(0)).current;
+  const addSlide = useRef(new Animated.Value(600)).current;
+  const addBackdrop = useRef(new Animated.Value(0)).current;
 
   // ── Real-time service subscription ───────────────────────────────────────
 
@@ -87,6 +138,7 @@ export function ServicesScreen() {
             duration: d.data().duration ?? 60,
             description: d.data().description ?? '',
             icon: d.data().icon ?? 'sparkles',
+            active: d.data().active !== false,
             updatedAt: d.data().updatedAt ?? null,
           }) as Service),
         );
@@ -96,76 +148,117 @@ export function ServicesScreen() {
     );
   }, []);
 
-  // ── Animate in when a service is queued for editing ───────────────────────
+  // ── Animate edit sheet ───────────────────────────────────────────────────
 
   useEffect(() => {
     if (!editingService) return;
-    slideAnim.setValue(600);
-    backdropAnim.setValue(0);
-    Animated.parallel([
-      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, tension: 60, friction: 12 }),
-      Animated.timing(backdropAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
-    ]).start();
+    openSheet(editSlide, editBackdrop);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingService]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Edit handlers ─────────────────────────────────────────────────────────
 
   const openEdit = (service: Service) => {
-    setForm({
+    setEditForm({
       priceFrom: String(service.priceFrom),
       duration: String(service.duration),
       description: service.description,
     });
-    setErrors({});
-    setSaving(false);
+    setEditErrors({});
+    setEditSaving(false);
     setEditingService(service);
   };
 
-  const closeEdit = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, { toValue: 600, duration: 220, useNativeDriver: true }),
-      Animated.timing(backdropAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-    ]).start(() => setEditingService(null));
+  const closeEdit = () => closeSheet(editSlide, editBackdrop, () => setEditingService(null));
+
+  const setEditField = (key: keyof EditFormState, value: string) => {
+    setEditForm((f) => ({ ...f, [key]: value }));
+    if (editErrors[key as keyof EditFormErrors]) setEditErrors((e) => ({ ...e, [key]: undefined }));
   };
 
-  const setField = (key: keyof FormState, value: string) => {
-    setForm((f) => ({ ...f, [key]: value }));
-    if (errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
-  };
-
-  const handleSave = async () => {
-    const priceFVal = parseFloat(form.priceFrom);
-    const durationVal = parseInt(form.duration, 10);
-    const newErrors: FormErrors = {};
-
-    if (!form.priceFrom.trim() || isNaN(priceFVal) || priceFVal <= 0) {
+  const handleEditSave = async () => {
+    const priceFVal = parseFloat(editForm.priceFrom);
+    const durationVal = parseInt(editForm.duration, 10);
+    const newErrors: EditFormErrors = {};
+    if (!editForm.priceFrom.trim() || isNaN(priceFVal) || priceFVal <= 0)
       newErrors.priceFrom = 'Enter a valid price greater than 0.';
-    }
-    if (!form.duration.trim() || isNaN(durationVal) || durationVal <= 0) {
+    if (!editForm.duration.trim() || isNaN(durationVal) || durationVal <= 0)
       newErrors.duration = 'Enter a valid duration in minutes.';
-    }
-    if (!form.description.trim()) {
-      newErrors.description = 'Description is required.';
-    }
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+    if (!editForm.description.trim()) newErrors.description = 'Description is required.';
+    if (Object.keys(newErrors).length > 0) { setEditErrors(newErrors); return; }
 
-    setSaving(true);
+    setEditSaving(true);
     try {
       await updateDoc(doc(db, 'services', editingService!.id), {
         priceFrom: priceFVal,
         duration: durationVal,
-        description: form.description.trim(),
+        description: editForm.description.trim(),
         updatedAt: serverTimestamp(),
       });
       closeEdit();
     } catch {
-      setErrors({ description: 'Failed to save. Please try again.' });
-      setSaving(false);
+      setEditErrors({ description: 'Failed to save. Please try again.' });
+      setEditSaving(false);
     }
+  };
+
+  // ── Add handlers ──────────────────────────────────────────────────────────
+
+  const openAdd = () => {
+    setAddForm(DEFAULT_ADD_FORM);
+    setAddErrors({});
+    setAddSaving(false);
+    setAddVisible(true);
+    openSheet(addSlide, addBackdrop);
+  };
+
+  const closeAdd = () => closeSheet(addSlide, addBackdrop, () => setAddVisible(false));
+
+  const setAddField = <K extends keyof AddFormState>(key: K, value: AddFormState[K]) => {
+    setAddForm((f) => ({ ...f, [key]: value }));
+    if (addErrors[key as keyof AddFormErrors]) setAddErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const handleAddSave = async () => {
+    const priceFVal = parseFloat(addForm.priceFrom);
+    const durationVal = parseInt(addForm.duration, 10);
+    const newErrors: AddFormErrors = {};
+    if (!addForm.name.trim()) newErrors.name = 'Service name is required.';
+    if (!addForm.description.trim()) newErrors.description = 'Description is required.';
+    else if (addForm.description.length > 100) newErrors.description = 'Max 100 characters.';
+    if (!addForm.priceFrom.trim() || isNaN(priceFVal) || priceFVal <= 0)
+      newErrors.priceFrom = 'Enter a valid price greater than 0.';
+    if (!addForm.duration.trim() || isNaN(durationVal) || durationVal <= 0)
+      newErrors.duration = 'Enter a valid duration in minutes.';
+    if (Object.keys(newErrors).length > 0) { setAddErrors(newErrors); return; }
+
+    setAddSaving(true);
+    try {
+      await addDoc(collection(db, 'services'), {
+        name: addForm.name.trim(),
+        description: addForm.description.trim(),
+        priceFrom: priceFVal,
+        duration: durationVal,
+        icon: addForm.selectedIcon,
+        active: addForm.active,
+        createdAt: serverTimestamp(),
+      });
+      closeAdd();
+    } catch {
+      setAddErrors({ name: 'Failed to save. Please try again.' });
+      setAddSaving(false);
+    }
+  };
+
+  // ── Toggle active ─────────────────────────────────────────────────────────
+
+  const handleToggleActive = async (service: Service) => {
+    try {
+      await updateDoc(doc(db, 'services', service.id), {
+        active: !service.active,
+        updatedAt: serverTimestamp(),
+      });
+    } catch { /* silent */ }
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -173,6 +266,13 @@ export function ServicesScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+        {/* Add Service button */}
+        <TouchableOpacity style={styles.addBtn} onPress={openAdd} activeOpacity={0.85}>
+          <Ionicons name="add-circle" size={20} color="#0A0A0A" />
+          <Text style={styles.addBtnText}>Add Service</Text>
+        </TouchableOpacity>
+
         {loading || seeding ? (
           <View style={styles.emptyState}>
             <ActivityIndicator color="#E09010" size="large" />
@@ -192,14 +292,19 @@ export function ServicesScreen() {
           </View>
         ) : (
           services.map((s) => (
-            <View key={s.id} style={styles.card}>
-              {/* Card header */}
+            <View key={s.id} style={[styles.card, !s.active && styles.cardHidden]}>
+              {!s.active && (
+                <View style={styles.hiddenBanner}>
+                  <Ionicons name="eye-off-outline" size={12} color="#6B7280" />
+                  <Text style={styles.hiddenBannerText}>Hidden from customers</Text>
+                </View>
+              )}
               <View style={styles.cardHeader}>
-                <View style={styles.cardIconWrap}>
-                  <Ionicons name={serviceIconName(s.icon)} size={22} color="#E09010" />
+                <View style={[styles.cardIconWrap, !s.active && styles.cardIconWrapHidden]}>
+                  <Ionicons name={serviceIconName(s.icon)} size={22} color={s.active ? '#E09010' : '#9CA3AF'} />
                 </View>
                 <View style={styles.cardInfo}>
-                  <Text style={styles.cardName}>{s.name}</Text>
+                  <Text style={[styles.cardName, !s.active && styles.cardNameHidden]}>{s.name}</Text>
                   <Text style={styles.cardDesc} numberOfLines={2}>{s.description}</Text>
                   <View style={styles.badgeRow}>
                     <View style={styles.priceBadge}>
@@ -213,101 +318,86 @@ export function ServicesScreen() {
                 </View>
               </View>
 
-              {/* Divider + action */}
               <View style={styles.cardDivider} />
-              <TouchableOpacity
-                style={styles.editBtn}
-                onPress={() => openEdit(s)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="pencil-outline" size={15} color="#E09010" />
-                <Text style={styles.editBtnText}>Edit Price & Details</Text>
-                <Ionicons name="chevron-forward" size={15} color="#E09010" style={styles.editChevron} />
-              </TouchableOpacity>
+
+              <View style={styles.cardActions}>
+                <TouchableOpacity
+                  style={styles.editBtn}
+                  onPress={() => openEdit(s)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="pencil-outline" size={15} color="#E09010" />
+                  <Text style={styles.editBtnText}>Edit Details</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.visibilityBtn}
+                  onPress={() => handleToggleActive(s)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={s.active ? 'eye-off-outline' : 'eye-outline'}
+                    size={15}
+                    color={s.active ? '#6B7280' : '#059669'}
+                  />
+                  <Text style={[styles.visibilityBtnText, !s.active && styles.visibilityBtnTextOn]}>
+                    {s.active ? 'Hide' : 'Show'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ))
         )}
       </ScrollView>
 
-      {/* ── Edit bottom sheet ─────────────────────────────────────────────── */}
+      {/* ── Edit sheet ──────────────────────────────────────────────────────── */}
       <Modal
         visible={editingService !== null}
         transparent
         animationType="none"
         onRequestClose={closeEdit}
       >
-        {/* Backdrop */}
-        <Animated.View
-          style={[styles.backdrop, { opacity: backdropAnim }]}
-          pointerEvents="none"
-        />
-
-        {/* Tap-outside to close */}
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          onPress={closeEdit}
-          activeOpacity={1}
-        />
-
-        {/* Sheet */}
+        <Animated.View style={[styles.backdrop, { opacity: editBackdrop }]} pointerEvents="none" />
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeEdit} activeOpacity={1} />
         <KeyboardAvoidingView
           style={styles.sheetPositioner}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           pointerEvents="box-none"
         >
-          <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
-            {/* Drag handle */}
-            <View style={styles.handleWrap}>
-              <View style={styles.dragHandle} />
-            </View>
-
-            {/* Sheet header */}
+          <Animated.View style={[styles.sheet, { transform: [{ translateY: editSlide }] }]}>
+            <View style={styles.handleWrap}><View style={styles.dragHandle} /></View>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle} numberOfLines={1}>
-                Edit — {editingService?.name}
-              </Text>
-              <TouchableOpacity
-                onPress={closeEdit}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              >
+              <Text style={styles.sheetTitle} numberOfLines={1}>Edit — {editingService?.name}</Text>
+              <TouchableOpacity onPress={closeEdit} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                 <Ionicons name="close" size={22} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
-            {/* Form */}
-            <ScrollView
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.formScroll}
-            >
-              {/* Price From */}
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.formScroll}>
               <View style={styles.fieldWrap}>
                 <Text style={styles.fieldLabel}>Price From ($)</Text>
-                <View style={[styles.prefixWrap, errors.priceFrom && styles.fieldInputError]}>
+                <View style={[styles.prefixWrap, editErrors.priceFrom && styles.fieldInputError]}>
                   <Text style={styles.prefix}>$</Text>
                   <TextInput
                     style={styles.prefixInput}
-                    value={form.priceFrom}
-                    onChangeText={(v) => setField('priceFrom', v)}
+                    value={editForm.priceFrom}
+                    onChangeText={(v) => setEditField('priceFrom', v)}
                     placeholder="49"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="decimal-pad"
                     returnKeyType="next"
                   />
                 </View>
-                {errors.priceFrom && (
-                  <Text style={styles.errorText}>{errors.priceFrom}</Text>
-                )}
+                {editErrors.priceFrom && <Text style={styles.errorText}>{editErrors.priceFrom}</Text>}
               </View>
 
-              {/* Duration */}
               <View style={styles.fieldWrap}>
                 <Text style={styles.fieldLabel}>Duration (minutes)</Text>
-                <View style={[styles.prefixWrap, errors.duration && styles.fieldInputError]}>
+                <View style={[styles.prefixWrap, editErrors.duration && styles.fieldInputError]}>
                   <TextInput
                     style={[styles.prefixInput, { paddingLeft: 14 }]}
-                    value={form.duration}
-                    onChangeText={(v) => setField('duration', v)}
+                    value={editForm.duration}
+                    onChangeText={(v) => setEditField('duration', v)}
                     placeholder="60"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="number-pad"
@@ -315,22 +405,15 @@ export function ServicesScreen() {
                   />
                   <Text style={styles.suffix}>min</Text>
                 </View>
-                {errors.duration && (
-                  <Text style={styles.errorText}>{errors.duration}</Text>
-                )}
+                {editErrors.duration && <Text style={styles.errorText}>{editErrors.duration}</Text>}
               </View>
 
-              {/* Description */}
               <View style={styles.fieldWrap}>
                 <Text style={styles.fieldLabel}>Description</Text>
                 <TextInput
-                  style={[
-                    styles.fieldInput,
-                    styles.textArea,
-                    errors.description && styles.fieldInputError,
-                  ]}
-                  value={form.description}
-                  onChangeText={(v) => setField('description', v)}
+                  style={[styles.fieldInput, styles.textArea, editErrors.description && styles.fieldInputError]}
+                  value={editForm.description}
+                  onChangeText={(v) => setEditField('description', v)}
                   placeholder="Brief service description"
                   placeholderTextColor="#9CA3AF"
                   multiline
@@ -338,23 +421,168 @@ export function ServicesScreen() {
                   textAlignVertical="top"
                   autoCapitalize="sentences"
                 />
-                {errors.description && (
-                  <Text style={styles.errorText}>{errors.description}</Text>
-                )}
+                {editErrors.description && <Text style={styles.errorText}>{editErrors.description}</Text>}
               </View>
 
-              {/* Save button */}
               <TouchableOpacity
-                style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
-                onPress={handleSave}
-                disabled={saving}
+                style={[styles.saveBtn, editSaving && styles.saveBtnDisabled]}
+                onPress={handleEditSave}
+                disabled={editSaving}
                 activeOpacity={0.85}
               >
-                {saving ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.saveBtnText}>Save Changes</Text>
-                )}
+                {editSaving ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
+              </TouchableOpacity>
+            </ScrollView>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Add Service sheet ───────────────────────────────────────────────── */}
+      <Modal
+        visible={addVisible}
+        transparent
+        animationType="none"
+        onRequestClose={closeAdd}
+      >
+        <Animated.View style={[styles.backdrop, { opacity: addBackdrop }]} pointerEvents="none" />
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeAdd} activeOpacity={1} />
+        <KeyboardAvoidingView
+          style={styles.sheetPositioner}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          pointerEvents="box-none"
+        >
+          <Animated.View style={[styles.sheet, styles.addSheet, { transform: [{ translateY: addSlide }] }]}>
+            <View style={styles.handleWrap}><View style={styles.dragHandle} /></View>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>New Service</Text>
+              <TouchableOpacity onPress={closeAdd} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Ionicons name="close" size={22} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.formScroll}>
+              {/* Name */}
+              <View style={styles.fieldWrap}>
+                <Text style={styles.fieldLabel}>Service Name *</Text>
+                <TextInput
+                  style={[styles.fieldInput, addErrors.name && styles.fieldInputError]}
+                  value={addForm.name}
+                  onChangeText={(v) => setAddField('name', v)}
+                  placeholder="e.g. Full Detail"
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="words"
+                  returnKeyType="next"
+                />
+                {addErrors.name && <Text style={styles.errorText}>{addErrors.name}</Text>}
+              </View>
+
+              {/* Description */}
+              <View style={styles.fieldWrap}>
+                <View style={styles.fieldLabelRow}>
+                  <Text style={styles.fieldLabel}>Description * </Text>
+                  <Text style={styles.fieldLabelCount}>{addForm.description.length}/100</Text>
+                </View>
+                <TextInput
+                  style={[styles.fieldInput, styles.textArea, addErrors.description && styles.fieldInputError]}
+                  value={addForm.description}
+                  onChangeText={(v) => setAddField('description', v)}
+                  placeholder="What does this service include?"
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  autoCapitalize="sentences"
+                  maxLength={100}
+                />
+                {addErrors.description && <Text style={styles.errorText}>{addErrors.description}</Text>}
+              </View>
+
+              {/* Price + Duration row */}
+              <View style={styles.rowFields}>
+                <View style={[styles.fieldWrap, { flex: 1, marginRight: 10 }]}>
+                  <Text style={styles.fieldLabel}>From $  *</Text>
+                  <View style={[styles.prefixWrap, addErrors.priceFrom && styles.fieldInputError]}>
+                    <Text style={styles.prefix}>$</Text>
+                    <TextInput
+                      style={styles.prefixInput}
+                      value={addForm.priceFrom}
+                      onChangeText={(v) => setAddField('priceFrom', v)}
+                      placeholder="49"
+                      placeholderTextColor="#9CA3AF"
+                      keyboardType="decimal-pad"
+                      returnKeyType="next"
+                    />
+                  </View>
+                  {addErrors.priceFrom && <Text style={styles.errorText}>{addErrors.priceFrom}</Text>}
+                </View>
+
+                <View style={[styles.fieldWrap, { flex: 1 }]}>
+                  <Text style={styles.fieldLabel}>Duration *</Text>
+                  <View style={[styles.prefixWrap, addErrors.duration && styles.fieldInputError]}>
+                    <TextInput
+                      style={[styles.prefixInput, { paddingLeft: 14 }]}
+                      value={addForm.duration}
+                      onChangeText={(v) => setAddField('duration', v)}
+                      placeholder="60"
+                      placeholderTextColor="#9CA3AF"
+                      keyboardType="number-pad"
+                      returnKeyType="done"
+                    />
+                    <Text style={styles.suffix}>min</Text>
+                  </View>
+                  {addErrors.duration && <Text style={styles.errorText}>{addErrors.duration}</Text>}
+                </View>
+              </View>
+
+              {/* Icon selector */}
+              <View style={styles.fieldWrap}>
+                <Text style={styles.fieldLabel}>Icon</Text>
+                <View style={styles.iconGrid}>
+                  {SELECTABLE_ICONS.map((iconKey) => {
+                    const isSelected = addForm.selectedIcon === iconKey;
+                    return (
+                      <TouchableOpacity
+                        key={iconKey}
+                        style={[styles.iconCell, isSelected && styles.iconCellSelected]}
+                        onPress={() => setAddField('selectedIcon', iconKey)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name={serviceIconName(iconKey)}
+                          size={24}
+                          color={isSelected ? '#FFFFFF' : '#6B7280'}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Active toggle */}
+              <View style={styles.fieldWrap}>
+                <View style={styles.toggleRow}>
+                  <View>
+                    <Text style={styles.fieldLabel}>Visible to customers</Text>
+                    <Text style={styles.toggleSub}>
+                      {addForm.active ? 'Customers can see and book this service' : 'Service is hidden from customers'}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={addForm.active}
+                    onValueChange={(v) => setAddField('active', v)}
+                    trackColor={{ false: '#E5E7EB', true: '#E09010' }}
+                    thumbColor="#FFFFFF"
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveBtn, addSaving && styles.saveBtnDisabled]}
+                onPress={handleAddSave}
+                disabled={addSaving}
+                activeOpacity={0.85}
+              >
+                {addSaving ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Text style={styles.saveBtnText}>Create Service</Text>}
               </TouchableOpacity>
             </ScrollView>
           </Animated.View>
@@ -369,19 +597,30 @@ export function ServicesScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F8F8FA' },
   content: { padding: 16, paddingBottom: 32 },
-  loader: { marginTop: 60 },
+
+  // ── Add button ─────────────────────────────────────────────────────────────
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E09010',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginBottom: 16,
+    shadowColor: '#E09010',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  addBtnText: { fontSize: 15, fontWeight: '700', color: '#0A0A0A' },
 
   // ── Empty state ────────────────────────────────────────────────────────────
   emptyState: { alignItems: 'center', paddingTop: 80, gap: 12 },
   emptyTitle: { fontSize: 16, fontWeight: '600', color: '#9CA3AF' },
   emptySub: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginTop: 8 },
-  seedBtn: {
-    marginTop: 8,
-    backgroundColor: '#E09010',
-    borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
+  seedBtn: { marginTop: 8, backgroundColor: '#E09010', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12 },
   seedBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
 
   // ── Service card ───────────────────────────────────────────────────────────
@@ -396,56 +635,62 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
-  cardHeader: {
+  cardHidden: { opacity: 0.55 },
+  hiddenBanner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 16,
-    gap: 14,
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
+  hiddenBannerText: { fontSize: 11, fontWeight: '600', color: '#6B7280' },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', padding: 16, gap: 14 },
   cardIconWrap: {
     width: 46,
     height: 46,
     borderRadius: 12,
-    backgroundColor: '#FFF1F3',
+    backgroundColor: 'rgba(224,144,16,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  cardIconWrapHidden: { backgroundColor: '#F3F4F6' },
   cardInfo: { flex: 1 },
   cardName: { fontSize: 16, fontWeight: '700', color: '#0A0A0A', marginBottom: 4 },
+  cardNameHidden: { color: '#6B7280' },
   cardDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18, marginBottom: 10 },
   badgeRow: { flexDirection: 'row', gap: 8 },
-  priceBadge: {
-    backgroundColor: '#FFF1F3',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
+  priceBadge: { backgroundColor: 'rgba(224,144,16,0.12)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   priceBadgeText: { fontSize: 11, fontWeight: '700', color: '#E09010' },
-  durationBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
+  durationBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   durationBadgeText: { fontSize: 11, fontWeight: '600', color: '#6B7280' },
   cardDivider: { height: 1, backgroundColor: '#F3F4F6' },
+  cardActions: { flexDirection: 'row' },
   editBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 13,
-    gap: 8,
+    gap: 6,
+    borderRightWidth: 1,
+    borderRightColor: '#F3F4F6',
   },
-  editBtnText: { fontSize: 13, fontWeight: '600', color: '#E09010', flex: 1 },
-  editChevron: { marginLeft: 'auto' },
+  editBtnText: { fontSize: 13, fontWeight: '600', color: '#E09010' },
+  visibilityBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    gap: 6,
+  },
+  visibilityBtnText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
+  visibilityBtnTextOn: { color: '#059669' },
 
-  // ── Bottom sheet ───────────────────────────────────────────────────────────
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-  },
+  // ── Bottom sheet shared ────────────────────────────────────────────────────
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
   sheetPositioner: { flex: 1, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#FFFFFF',
@@ -454,6 +699,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 32 : 24,
     maxHeight: '85%',
   },
+  addSheet: { maxHeight: '95%' },
   handleWrap: { alignItems: 'center', paddingTop: 12, paddingBottom: 4 },
   dragHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB' },
   sheetHeader: {
@@ -469,8 +715,11 @@ const styles = StyleSheet.create({
 
   // ── Form ───────────────────────────────────────────────────────────────────
   formScroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
+  rowFields: { flexDirection: 'row' },
   fieldWrap: { marginBottom: 18 },
+  fieldLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#374151', letterSpacing: 0.2, marginBottom: 7 },
+  fieldLabelCount: { fontSize: 11, color: '#9CA3AF' },
   prefixWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -480,27 +729,9 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     overflow: 'hidden',
   },
-  prefix: {
-    paddingLeft: 14,
-    paddingRight: 4,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  suffix: {
-    paddingRight: 14,
-    paddingLeft: 4,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  prefixInput: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingRight: 14,
-    fontSize: 15,
-    color: '#0A0A0A',
-  },
+  prefix: { paddingLeft: 14, paddingRight: 4, fontSize: 15, fontWeight: '600', color: '#6B7280' },
+  suffix: { paddingRight: 14, paddingLeft: 4, fontSize: 15, fontWeight: '600', color: '#6B7280' },
+  prefixInput: { flex: 1, paddingVertical: 12, paddingRight: 14, fontSize: 15, color: '#0A0A0A' },
   fieldInput: {
     backgroundColor: '#F9FAFB',
     borderWidth: 1.5,
@@ -514,6 +745,26 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 80, paddingTop: 12 },
   fieldInputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
   errorText: { fontSize: 12, color: '#DC2626', marginTop: 4 },
+
+  // ── Icon grid ──────────────────────────────────────────────────────────────
+  iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  iconCell: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  iconCellSelected: { backgroundColor: '#E09010', borderColor: '#E09010' },
+
+  // ── Toggle ─────────────────────────────────────────────────────────────────
+  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  toggleSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2, marginBottom: 7 },
+
+  // ── Save button ────────────────────────────────────────────────────────────
   saveBtn: {
     backgroundColor: '#E09010',
     borderRadius: 12,

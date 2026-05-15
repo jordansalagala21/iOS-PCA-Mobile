@@ -40,6 +40,8 @@ type CustomerProfile = {
   vehicleMake: string;
   vehicleModel: string;
   fcmToken?: string;
+  accountType?: string;
+  linkedUid?: string | null;
   createdAt: { toDate: () => Date } | null;
 };
 
@@ -183,6 +185,8 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
         vehicleMake: d.vehicleMake ?? '',
         vehicleModel: d.vehicleModel ?? '',
         fcmToken: typeof d.fcmToken === 'string' ? d.fcmToken : undefined,
+        accountType: d.accountType,
+        linkedUid: d.uid ?? null,
         createdAt: d.createdAt ?? null,
       });
     });
@@ -355,6 +359,17 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
           ) : null}
           {profile?.createdAt ? (
             <Text style={styles.memberSince}>Member since {formatJoined(profile.createdAt)}</Text>
+          ) : null}
+          {profile?.accountType === 'walk-in' ? (
+            <View style={styles.walkInBadge}>
+              <Ionicons name="walk-outline" size={12} color="#92400E" />
+              <Text style={styles.walkInBadgeText}>Walk-in Account</Text>
+            </View>
+          ) : profile?.accountType === 'linked' || (profile?.linkedUid) ? (
+            <View style={styles.appUserBadge}>
+              <Ionicons name="checkmark-circle" size={12} color="#065F46" />
+              <Text style={styles.appUserBadgeText}>App User</Text>
+            </View>
           ) : null}
         </View>
 
@@ -606,6 +621,32 @@ const styles = StyleSheet.create({
   contactRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   contactText: { fontSize: 14, color: '#9CA3AF' },
   memberSince: { fontSize: 12, color: '#6B7280', marginTop: 4 },
+  walkInBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  walkInBadgeText: { fontSize: 11, fontWeight: '700', color: '#92400E' },
+  appUserBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#D1FAE5',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#6EE7B7',
+  },
+  appUserBadgeText: { fontSize: 11, fontWeight: '700', color: '#065F46' },
 
   // ── Stats ────────────────────────────────────────────────────────────────────
   statsRow: {

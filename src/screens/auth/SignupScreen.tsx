@@ -1,6 +1,16 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+  writeBatch,
+} from "firebase/firestore";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -48,6 +58,7 @@ export function SignupScreen({ navigation }: Props) {
   const [vehicleModel, setVehicleModel] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [linked, setLinked] = useState(false);
 
   const handleSignup = async () => {
     if (!fullName.trim() || !email.trim() || !password || !phone.trim()) {
@@ -71,15 +82,60 @@ export function SignupScreen({ navigation }: Props) {
         password,
       );
       await updateProfile(credential.user, { displayName: fullName.trim() });
-      await setDoc(doc(db, "users", credential.user.uid), {
-        fullName: fullName.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone.trim(),
-        vehicleMake: vehicleMake.trim(),
-        vehicleModel: vehicleModel.trim(),
-        role: "customer",
-        createdAt: serverTimestamp(),
-      });
+
+      // Check for an existing walk-in record with the same phone number
+      const walkInSnap = await getDocs(
+        query(
+          collection(db, "users"),
+          where("phone", "==", phone.trim()),
+          where("accountType", "==", "walk-in"),
+        ),
+      );
+      const walkInDoc = walkInSnap.docs.find((d) => d.data().uid === null);
+
+      if (walkInDoc) {
+        // Link: migrate appointments to new auth uid, then update walk-in doc
+        const apptSnap = await getDocs(
+          query(
+            collection(db, "appointments"),
+            where("customerId", "==", walkInDoc.id),
+          ),
+        );
+        if (!apptSnap.empty) {
+          const batch = writeBatch(db);
+          apptSnap.docs.forEach((d) =>
+            batch.update(d.ref, { customerId: credential.user.uid }),
+          );
+          await batch.commit();
+        }
+        await updateDoc(doc(db, "users", walkInDoc.id), {
+          uid: credential.user.uid,
+          accountType: "linked",
+        });
+        // Create the canonical /users/{auth.uid} document
+        await setDoc(doc(db, "users", credential.user.uid), {
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          vehicleMake: vehicleMake.trim(),
+          vehicleModel: vehicleModel.trim(),
+          role: "customer",
+          accountType: "linked",
+          linkedFrom: walkInDoc.id,
+          createdAt: serverTimestamp(),
+        });
+        setLinked(true);
+      } else {
+        await setDoc(doc(db, "users", credential.user.uid), {
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          vehicleMake: vehicleMake.trim(),
+          vehicleModel: vehicleModel.trim(),
+          role: "customer",
+          createdAt: serverTimestamp(),
+        });
+      }
     } catch (e: unknown) {
       const code = (e as { code?: string }).code ?? "";
       setError(toUserMessage(code));
@@ -216,6 +272,15 @@ export function SignupScreen({ navigation }: Props) {
               </View>
             </View>
 
+            {linked && (
+              <View style={styles.linkedBanner}>
+                <Text style={styles.linkedBannerText}>
+                  Welcome back! We found your visit history and linked it to
+                  your new account.
+                </Text>
+              </View>
+            )}
+
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
             <TouchableOpacity
@@ -333,6 +398,20 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: "#0A0A0A",
+  },
+  linkedBanner: {
+    backgroundColor: "#D1FAE5",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#6EE7B7",
+  },
+  linkedBannerText: {
+    fontSize: 13,
+    color: "#065F46",
+    fontWeight: "600",
+    lineHeight: 18,
   },
   errorText: {
     fontSize: 13,

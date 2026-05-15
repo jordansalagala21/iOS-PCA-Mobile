@@ -117,12 +117,15 @@ export function HomeScreen() {
       q,
       (snap) => {
         setServices(
-          snap.docs.map((d) => ({
-            id: d.id,
-            name: d.data().name ?? '',
-            priceFrom: d.data().priceFrom ?? 0,
-            icon: d.data().icon ?? 'sparkles',
-          })),
+          snap.docs
+            .map((d) => ({
+              id: d.id,
+              name: d.data().name ?? '',
+              priceFrom: d.data().priceFrom ?? 0,
+              icon: d.data().icon ?? 'sparkles',
+              active: d.data().active !== false,
+            }))
+            .filter((s) => s.active),
         );
         setServicesLoading(false);
       },

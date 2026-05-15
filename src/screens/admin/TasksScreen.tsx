@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
+  addDoc,
   collection,
   doc,
   getDocs,
@@ -48,6 +49,10 @@ type ApptDoc = {
   adminNotes?: string;
 };
 
+type NjCustomer = { id: string; fullName: string; phone: string; email: string };
+type NjService = { id: string; name: string; priceFrom: number };
+type NjVehicle = { id: string; label: string };
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 export const STATUS_CONFIG: Record<ApptStatus, { label: string; color: string; bg: string }> = {
@@ -58,6 +63,11 @@ export const STATUS_CONFIG: Record<ApptStatus, { label: string; color: string; b
 };
 
 const STATUS_ORDER: ActiveStatus[] = ['pending', 'in-progress', 'completed'];
+
+const TIME_SLOTS = [
+  '08:00', '09:00', '10:00', '11:00', '12:00',
+  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
+];
 
 const AVATAR_COLORS = ['#E09010', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
 
@@ -133,6 +143,7 @@ export function TasksScreen() {
 
   // ── Active tab data ───────────────────────────────────────────────────────
   const [appointments, setAppointments] = useState<ApptDoc[]>([]);
+  const [completedToday, setCompletedToday] = useState<ApptDoc[]>([]);
   const [loadingActive, setLoadingActive] = useState(true);
 
   // ── History tab data ──────────────────────────────────────────────────────
@@ -158,21 +169,61 @@ export function TasksScreen() {
   const detailSlideAnim = useRef(new Animated.Value(600)).current;
   const detailBackdropAnim = useRef(new Animated.Value(0)).current;
 
+  // ── New Walk-in Job state ─────────────────────────────────────────────────
+  const [showNewJob, setShowNewJob] = useState(false);
+  const [njCustomers, setNjCustomers] = useState<NjCustomer[]>([]);
+  const [njCustomerSearch, setNjCustomerSearch] = useState('');
+  const [njSelectedCustomer, setNjSelectedCustomer] = useState<NjCustomer | null>(null);
+  const [njServices, setNjServices] = useState<NjService[]>([]);
+  const [njSelectedService, setNjSelectedService] = useState<NjService | null>(null);
+  const [njDate, setNjDate] = useState('');
+  const [njSelectedSlot, setNjSelectedSlot] = useState<string | null>(null);
+  const [njSlotCounts, setNjSlotCounts] = useState<Record<string, number>>({});
+  const [njSlotsLoading, setNjSlotsLoading] = useState(false);
+  const [njVehicles, setNjVehicles] = useState<NjVehicle[]>([]);
+  const [njSelectedVehicle, setNjSelectedVehicle] = useState<NjVehicle | null>(null);
+  const [njVehicleManual, setNjVehicleManual] = useState('');
+  const [njStatus, setNjStatus] = useState<'pending' | 'in-progress'>('pending');
+  const [njCharge, setNjCharge] = useState('');
+  const [njNotes, setNjNotes] = useState('');
+  const [njSaving, setNjSaving] = useState(false);
+  const [njError, setNjError] = useState<string | null>(null);
+
   // ── Active: onSnapshot for today's appointments ───────────────────────────
 
+  // All pending + in-progress appointments (any date)
   useEffect(() => {
-    const q = query(collection(db, 'appointments'), where('date', '==', today));
+    const q = query(
+      collection(db, 'appointments'),
+      where('status', 'in', ['pending', 'in-progress']),
+    );
     return onSnapshot(
       q,
       (snap) => {
         const data = snap.docs
           .map((d) => ({ id: d.id, ...d.data() }) as ApptDoc)
-          .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
+          .sort((a, b) =>
+            a.date !== b.date
+              ? a.date.localeCompare(b.date)
+              : a.timeSlot.localeCompare(b.timeSlot),
+          );
         setAppointments(data);
         setLoadingActive(false);
       },
       () => setLoadingActive(false),
     );
+  }, []);
+
+  // Today's completed jobs (separate listener)
+  useEffect(() => {
+    const q = query(collection(db, 'appointments'), where('date', '==', today));
+    return onSnapshot(q, (snap) => {
+      setCompletedToday(
+        snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as ApptDoc)
+          .filter((a) => a.status === 'completed'),
+      );
+    });
   }, [today]);
 
   // ── History: getDocs on tab switch ────────────────────────────────────────
@@ -266,12 +317,133 @@ export function TasksScreen() {
     closeSheet(detailSlideAnim, detailBackdropAnim, () => setViewingAppt(null));
   };
 
+  // ── New Walk-in Job handlers ───────────────────────────────────────────────
+
+  const openNewJob = async () => {
+    setNjSelectedCustomer(null);
+    setNjCustomerSearch('');
+    setNjSelectedService(null);
+    setNjDate('');
+    setNjSelectedSlot(null);
+    setNjSlotCounts({});
+    setNjVehicles([]);
+    setNjSelectedVehicle(null);
+    setNjVehicleManual('');
+    setNjStatus('pending');
+    setNjCharge('');
+    setNjNotes('');
+    setNjSaving(false);
+    setNjError(null);
+    setShowNewJob(true);
+    // Load customers + services in parallel
+    const [custSnap, svcSnap] = await Promise.all([
+      getDocs(query(collection(db, 'users'), where('role', '==', 'customer'))),
+      getDocs(collection(db, 'services')),
+    ]);
+    setNjCustomers(
+      custSnap.docs.map((d) => ({
+        id: d.id,
+        fullName: d.data().fullName ?? d.data().displayName ?? 'Unknown',
+        phone: d.data().phone ?? '',
+        email: d.data().email ?? '',
+      })).sort((a, b) => a.fullName.localeCompare(b.fullName)),
+    );
+    setNjServices(
+      svcSnap.docs
+        .filter((d) => d.data().active !== false)
+        .map((d) => ({ id: d.id, name: d.data().name ?? '', priceFrom: d.data().priceFrom ?? 0 }))
+        .sort((a, b) => a.priceFrom - b.priceFrom),
+    );
+  };
+
+  const handleNjCustomerSelect = async (c: NjCustomer) => {
+    setNjSelectedCustomer(c);
+    setNjSelectedVehicle(null);
+    setNjVehicleManual('');
+    try {
+      const snap = await getDocs(collection(db, 'users', c.id, 'vehicles'));
+      setNjVehicles(
+        snap.docs.map((d) => ({
+          id: d.id,
+          label: [d.data().year, d.data().make, d.data().model].filter(Boolean).join(' ') ||
+            d.data().nickname || 'Vehicle',
+        })),
+      );
+    } catch {
+      setNjVehicles([]);
+    }
+  };
+
+  const handleNjDateChange = async (text: string) => {
+    setNjDate(text);
+    setNjSelectedSlot(null);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) { setNjSlotCounts({}); return; }
+    setNjSlotsLoading(true);
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'appointments'), where('date', '==', text)),
+      );
+      const counts: Record<string, number> = {};
+      snap.docs.forEach((d) => {
+        const slot = d.data().timeSlot as string;
+        if (slot) counts[slot] = (counts[slot] ?? 0) + 1;
+      });
+      setNjSlotCounts(counts);
+    } catch { setNjSlotCounts({}); }
+    finally { setNjSlotsLoading(false); }
+  };
+
+  const handleNjSave = async () => {
+    if (!njSelectedCustomer || !njSelectedService) {
+      setNjError('Select a customer and service.'); return;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(njDate)) {
+      setNjError('Enter a valid date (YYYY-MM-DD).'); return;
+    }
+    if (!njSelectedSlot) { setNjError('Select a time slot.'); return; }
+    const vehicleDetails = njSelectedVehicle ? njSelectedVehicle.label : njVehicleManual.trim();
+    if (!vehicleDetails) { setNjError('Enter vehicle details.'); return; }
+
+    setNjSaving(true);
+    setNjError(null);
+    try {
+      await addDoc(collection(db, 'appointments'), {
+        customerId: njSelectedCustomer.id,
+        customerName: njSelectedCustomer.fullName,
+        serviceId: njSelectedService.id,
+        serviceName: njSelectedService.name,
+        vehicleId: njSelectedVehicle?.id ?? null,
+        vehicleDetails,
+        vehicleColor: null,
+        date: njDate,
+        timeSlot: njSelectedSlot,
+        type: 'one-time',
+        status: njStatus,
+        estimatedPrice: njSelectedService.priceFrom,
+        actualCharge: njCharge.trim() ? parseFloat(njCharge) : null,
+        adminNotes: njNotes.trim() || null,
+        bookedByAdmin: true,
+        createdAt: serverTimestamp(),
+      });
+      setShowNewJob(false);
+    } catch {
+      setNjError('Failed to save. Please try again.');
+      setNjSaving(false);
+    }
+  };
+
+  const njFilteredCustomers = useMemo(() => {
+    const q = njCustomerSearch.trim().toLowerCase();
+    if (!q) return njCustomers;
+    return njCustomers.filter(
+      (c) => c.fullName.toLowerCase().includes(q) || c.phone.includes(q),
+    );
+  }, [njCustomers, njCustomerSearch]);
+
   // ── Derived: Active ───────────────────────────────────────────────────────
 
-  const activeJobs = appointments.filter(
-    (a) => a.status === 'pending' || a.status === 'in-progress',
-  );
-  const completedToday = appointments.filter((a) => a.status === 'completed');
+  // appointments = all pending + in-progress (any date); completedToday = today's completed
+  const activeJobs = appointments; // already filtered by status in the listener
   const pendingCount = appointments.filter((a) => a.status === 'pending').length;
 
   // ── Derived: History ──────────────────────────────────────────────────────
@@ -316,6 +488,13 @@ export function TasksScreen() {
             <Text style={styles.cardService} numberOfLines={1}>
               {appt.serviceName} · {formatTime(appt.timeSlot)}
             </Text>
+            <View style={styles.cardDateRow}>
+              <Ionicons name="calendar-outline" size={12} color="#E09010" />
+              <Text style={styles.cardDate}>{formatDate(appt.date)}</Text>
+              {appt.date === today && (
+                <View style={styles.todayPill}><Text style={styles.todayPillText}>Today</Text></View>
+              )}
+            </View>
           </View>
         </View>
 
@@ -414,12 +593,18 @@ export function TasksScreen() {
       {/* ── ACTIVE TAB ───────────────────────────────────────────────────── */}
       {activeTab === 'active' && (
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {/* New Walk-in Job button */}
+          <TouchableOpacity style={styles.newJobBtn} onPress={openNewJob} activeOpacity={0.85}>
+            <Ionicons name="add-circle" size={18} color="#0A0A0A" />
+            <Text style={styles.newJobBtnText}>New Walk-in Job</Text>
+          </TouchableOpacity>
+
           {/* Stats row */}
           <View style={styles.statsRow}>
             {[
-              { label: "Today's Jobs", value: String(appointments.length), icon: 'briefcase-outline' as const },
+              { label: 'Active Jobs', value: String(appointments.length), icon: 'briefcase-outline' as const },
               { label: 'Pending', value: String(pendingCount), icon: 'time-outline' as const },
-              { label: 'Completed', value: String(completedToday.length), icon: 'checkmark-done-outline' as const },
+              { label: 'Done Today', value: String(completedToday.length), icon: 'checkmark-done-outline' as const },
             ].map((stat) => (
               <View key={stat.label} style={styles.statCard}>
                 <Ionicons name={stat.icon} size={20} color="#E09010" />
@@ -787,6 +972,251 @@ export function TasksScreen() {
           </Animated.View>
         </KeyboardAvoidingView>
       </Modal>
+      {/* ── New Walk-in Job full-screen modal ───────────────────────────── */}
+      <Modal
+        visible={showNewJob}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowNewJob(false)}
+      >
+        <SafeAreaView style={njStyles.safe} edges={['top', 'bottom']}>
+          {/* Header */}
+          <View style={njStyles.header}>
+            <TouchableOpacity onPress={() => setShowNewJob(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={njStyles.headerTitle}>New Walk-in Job</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <ScrollView
+              contentContainerStyle={njStyles.scroll}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {/* ── Customer ── */}
+              <Text style={njStyles.sectionLabel}>CUSTOMER</Text>
+              {!njSelectedCustomer ? (
+                <>
+                  <View style={njStyles.searchWrap}>
+                    <Ionicons name="search-outline" size={16} color="#9CA3AF" />
+                    <TextInput
+                      style={njStyles.searchInput}
+                      value={njCustomerSearch}
+                      onChangeText={setNjCustomerSearch}
+                      placeholder="Search name or phone…"
+                      placeholderTextColor="#9CA3AF"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+                  {njFilteredCustomers.slice(0, 6).map((c) => (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={njStyles.listItem}
+                      onPress={() => handleNjCustomerSelect(c)}
+                      activeOpacity={0.75}
+                    >
+                      <View style={njStyles.listItemIcon}>
+                        <Ionicons name="person-outline" size={16} color="#E09010" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={njStyles.listItemTitle}>{c.fullName}</Text>
+                        <Text style={njStyles.listItemSub}>{c.phone || c.email}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+                    </TouchableOpacity>
+                  ))}
+                  {njCustomers.length === 0 && (
+                    <Text style={njStyles.emptyHint}>Loading customers…</Text>
+                  )}
+                </>
+              ) : (
+                <View style={njStyles.selectedCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={njStyles.selectedCardTitle}>{njSelectedCustomer.fullName}</Text>
+                    <Text style={njStyles.selectedCardSub}>{njSelectedCustomer.phone}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => { setNjSelectedCustomer(null); setNjVehicles([]); }}>
+                    <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* ── Service ── */}
+              <Text style={[njStyles.sectionLabel, { marginTop: 20 }]}>SERVICE</Text>
+              {njServices.map((s) => {
+                const sel = njSelectedService?.id === s.id;
+                return (
+                  <TouchableOpacity
+                    key={s.id}
+                    style={[njStyles.listItem, sel && njStyles.listItemSelected]}
+                    onPress={() => setNjSelectedService(s)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[njStyles.listItemTitle, sel && njStyles.listItemTitleSel]}>{s.name}</Text>
+                    <Text style={[njStyles.listItemSub, sel && njStyles.listItemSubSel]}>From ${s.priceFrom}</Text>
+                    {sel && <Ionicons name="checkmark-circle" size={18} color="#E09010" style={{ marginLeft: 8 }} />}
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* ── Date & Time ── */}
+              <Text style={[njStyles.sectionLabel, { marginTop: 20 }]}>DATE & TIME</Text>
+              <View style={njStyles.fieldWrap}>
+                <Text style={njStyles.fieldLabel}>Date (YYYY-MM-DD)</Text>
+                <TextInput
+                  style={njStyles.fieldInput}
+                  value={njDate}
+                  onChangeText={handleNjDateChange}
+                  placeholder="2026-06-15"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={10}
+                />
+              </View>
+              {njDate.length === 10 && (
+                njSlotsLoading ? (
+                  <ActivityIndicator color="#E09010" style={{ marginVertical: 12 }} />
+                ) : (
+                  <View style={njStyles.slotsGrid}>
+                    {TIME_SLOTS.map((slot) => {
+                      const count = njSlotCounts[slot] ?? 0;
+                      const full = count >= 2;
+                      const sel = njSelectedSlot === slot;
+                      return (
+                        <TouchableOpacity
+                          key={slot}
+                          style={[njStyles.slotPill, sel && njStyles.slotPillSel, full && njStyles.slotPillFull]}
+                          onPress={() => !full && setNjSelectedSlot(slot)}
+                          disabled={full}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[njStyles.slotTime, sel && njStyles.slotTimeSel, full && njStyles.slotTimeFull]}>
+                            {formatTime(slot)}
+                          </Text>
+                          {full && <Text style={njStyles.slotFullText}>Full</Text>}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )
+              )}
+
+              {/* ── Vehicle ── */}
+              <Text style={[njStyles.sectionLabel, { marginTop: 20 }]}>VEHICLE</Text>
+              {njVehicles.length > 0 ? (
+                njVehicles.map((v) => {
+                  const sel = njSelectedVehicle?.id === v.id;
+                  return (
+                    <TouchableOpacity
+                      key={v.id}
+                      style={[njStyles.listItem, sel && njStyles.listItemSelected]}
+                      onPress={() => setNjSelectedVehicle(v)}
+                      activeOpacity={0.75}
+                    >
+                      <Ionicons name="car-outline" size={16} color={sel ? '#E09010' : '#9CA3AF'} style={{ marginRight: 10 }} />
+                      <Text style={[njStyles.listItemTitle, sel && njStyles.listItemTitleSel]}>{v.label}</Text>
+                      {sel && <Ionicons name="checkmark-circle" size={18} color="#E09010" style={{ marginLeft: 'auto' }} />}
+                    </TouchableOpacity>
+                  );
+                })
+              ) : (
+                <View style={njStyles.fieldWrap}>
+                  <Text style={njStyles.fieldLabel}>Vehicle details</Text>
+                  <TextInput
+                    style={njStyles.fieldInput}
+                    value={njVehicleManual}
+                    onChangeText={setNjVehicleManual}
+                    placeholder="e.g. 2022 Toyota Camry"
+                    placeholderTextColor="#9CA3AF"
+                    autoCapitalize="words"
+                  />
+                </View>
+              )}
+
+              {/* ── Job Details ── */}
+              <Text style={[njStyles.sectionLabel, { marginTop: 20 }]}>JOB DETAILS</Text>
+
+              <View style={njStyles.fieldWrap}>
+                <Text style={njStyles.fieldLabel}>Initial Status</Text>
+                <View style={njStyles.statusRow}>
+                  {(['pending', 'in-progress'] as const).map((s) => (
+                    <TouchableOpacity
+                      key={s}
+                      style={[njStyles.statusBtn, njStatus === s && njStyles.statusBtnActive]}
+                      onPress={() => setNjStatus(s)}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[njStyles.statusBtnText, njStatus === s && njStyles.statusBtnTextActive]}>
+                        {s === 'pending' ? 'Pending' : 'In Progress'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={njStyles.fieldWrap}>
+                <Text style={njStyles.fieldLabel}>Actual Charge (optional)</Text>
+                <View style={njStyles.prefixWrap}>
+                  <Text style={njStyles.prefix}>$</Text>
+                  <TextInput
+                    style={njStyles.prefixInput}
+                    value={njCharge}
+                    onChangeText={setNjCharge}
+                    placeholder={String(njSelectedService?.priceFrom ?? '')}
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="decimal-pad"
+                    returnKeyType="next"
+                  />
+                </View>
+              </View>
+
+              <View style={njStyles.fieldWrap}>
+                <Text style={njStyles.fieldLabel}>Admin Notes (optional)</Text>
+                <TextInput
+                  style={[njStyles.fieldInput, njStyles.textArea]}
+                  value={njNotes}
+                  onChangeText={setNjNotes}
+                  placeholder="Any notes about this job…"
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  autoCapitalize="sentences"
+                />
+              </View>
+
+              {njError && (
+                <View style={njStyles.errorBanner}>
+                  <Ionicons name="alert-circle-outline" size={16} color="#DC2626" />
+                  <Text style={njStyles.errorBannerText}>{njError}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[njStyles.saveBtn, njSaving && njStyles.saveBtnDisabled]}
+                onPress={handleNjSave}
+                disabled={njSaving}
+                activeOpacity={0.85}
+              >
+                {njSaving ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color="#0A0A0A" />
+                    <Text style={njStyles.saveBtnText}>Create Job</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -929,7 +1359,16 @@ const styles = StyleSheet.create({
   statusBadge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   statusBadgeText: { fontSize: 11, fontWeight: '700' },
   cardVehicle: { fontSize: 12, color: '#6B7280', marginBottom: 2 },
-  cardService: { fontSize: 12, color: '#9CA3AF' },
+  cardService: { fontSize: 12, color: '#9CA3AF', marginBottom: 4 },
+  cardDateRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  cardDate: { fontSize: 12, fontWeight: '700', color: '#E09010' },
+  todayPill: {
+    backgroundColor: '#E09010',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  todayPillText: { fontSize: 9, fontWeight: '800', color: '#0A0A0A' },
   notesRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -1075,4 +1514,181 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   detailNotesText: { fontSize: 14, color: '#374151', lineHeight: 20 },
+
+  // ── New Walk-in Job button ─────────────────────────────────────────────────
+  newJobBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E09010',
+    borderRadius: 12,
+    paddingVertical: 13,
+    marginBottom: 20,
+    shadowColor: '#E09010',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.28,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  newJobBtnText: { fontSize: 14, fontWeight: '700', color: '#0A0A0A' },
+});
+
+// ── New Job Modal Styles ───────────────────────────────────────────────────────
+
+const njStyles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#F8F8FA' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#0A0A0A',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  scroll: { padding: 20, paddingBottom: 48 },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#9CA3AF',
+    letterSpacing: 0.8,
+    marginBottom: 12,
+  },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    marginBottom: 8,
+  },
+  searchInput: { flex: 1, fontSize: 14, color: '#0A0A0A', paddingVertical: 0 },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  listItemSelected: { borderColor: '#E09010', backgroundColor: '#FFFBF0' },
+  listItemIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(224,144,16,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  listItemTitle: { fontSize: 14, fontWeight: '600', color: '#0A0A0A' },
+  listItemTitleSel: { color: '#0A0A0A' },
+  listItemSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  listItemSubSel: { color: '#6B7280' },
+  emptyHint: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginVertical: 12 },
+  selectedCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D1FAE5',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#6EE7B7',
+  },
+  selectedCardTitle: { fontSize: 14, fontWeight: '700', color: '#065F46' },
+  selectedCardSub: { fontSize: 12, color: '#059669', marginTop: 2 },
+  fieldWrap: { marginBottom: 16 },
+  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#374151', letterSpacing: 0.2, marginBottom: 7 },
+  fieldInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 11,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#0A0A0A',
+  },
+  textArea: { minHeight: 80, paddingTop: 12 },
+  slotsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
+  slotPill: {
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    minWidth: 76,
+  },
+  slotPillSel: { borderColor: '#E09010', backgroundColor: 'rgba(224,144,16,0.08)' },
+  slotPillFull: { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' },
+  slotTime: { fontSize: 13, fontWeight: '600', color: '#0A0A0A' },
+  slotTimeSel: { color: '#E09010' },
+  slotTimeFull: { color: '#D1D5DB' },
+  slotFullText: { fontSize: 9, color: '#D1D5DB', marginTop: 2 },
+  statusRow: { flexDirection: 'row', gap: 10 },
+  statusBtn: {
+    flex: 1,
+    paddingVertical: 11,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  statusBtnActive: { backgroundColor: '#0A0A0A', borderColor: '#0A0A0A' },
+  statusBtnText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
+  statusBtnTextActive: { color: '#FFFFFF' },
+  prefixWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 11,
+    overflow: 'hidden',
+  },
+  prefix: { paddingLeft: 14, paddingRight: 4, fontSize: 15, fontWeight: '600', color: '#6B7280' },
+  prefixInput: { flex: 1, paddingVertical: 12, paddingRight: 14, fontSize: 15, color: '#0A0A0A' },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+  },
+  errorBannerText: { fontSize: 13, color: '#DC2626', flex: 1 },
+  saveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E09010',
+    borderRadius: 14,
+    paddingVertical: 16,
+    shadowColor: '#E09010',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  saveBtnDisabled: { opacity: 0.6 },
+  saveBtnText: { color: '#0A0A0A', fontSize: 16, fontWeight: '700' },
 });
