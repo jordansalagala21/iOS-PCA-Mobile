@@ -59,7 +59,7 @@ export const STATUS_CONFIG: Record<ApptStatus, { label: string; color: string; b
 
 const STATUS_ORDER: ActiveStatus[] = ['pending', 'in-progress', 'completed'];
 
-const AVATAR_COLORS = ['#E94560', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
+const AVATAR_COLORS = ['#E09010', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -337,7 +337,7 @@ export function TasksScreen() {
             onPress={() => openEdit(appt)}
             activeOpacity={0.75}
           >
-            <Ionicons name="pencil-outline" size={13} color="#E94560" />
+            <Ionicons name="pencil-outline" size={13} color="#E09010" />
             <Text style={styles.updateBtnText}>Update Job</Text>
           </TouchableOpacity>
         </View>
@@ -422,7 +422,7 @@ export function TasksScreen() {
               { label: 'Completed', value: String(completedToday.length), icon: 'checkmark-done-outline' as const },
             ].map((stat) => (
               <View key={stat.label} style={styles.statCard}>
-                <Ionicons name={stat.icon} size={20} color="#E94560" />
+                <Ionicons name={stat.icon} size={20} color="#E09010" />
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
               </View>
@@ -430,7 +430,7 @@ export function TasksScreen() {
           </View>
 
           {loadingActive ? (
-            <ActivityIndicator color="#E94560" style={styles.loader} />
+            <ActivityIndicator color="#E09010" style={styles.loader} />
           ) : (
             <>
               <Text style={styles.sectionTitle}>Active Jobs</Text>
@@ -511,7 +511,7 @@ export function TasksScreen() {
 
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             {loadingHistory ? (
-              <ActivityIndicator color="#E94560" style={styles.loader} />
+              <ActivityIndicator color="#E09010" style={styles.loader} />
             ) : filteredHistory.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="time-outline" size={36} color="#D1D5DB" />
@@ -766,7 +766,7 @@ export function TasksScreen() {
               ].map((row) => (
                 <View key={row.label} style={styles.detailRow}>
                   <View style={styles.detailIconWrap}>
-                    <Ionicons name={row.icon} size={16} color="#E94560" />
+                    <Ionicons name={row.icon} size={16} color="#E09010" />
                   </View>
                   <View style={styles.detailRowText}>
                     <Text style={styles.detailLabel}>{row.label}</Text>
@@ -823,7 +823,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   segmentText: { fontSize: 14, fontWeight: '600', color: '#9CA3AF' },
-  segmentTextActive: { color: '#1A1A2E' },
+  segmentTextActive: { color: '#0A0A0A' },
 
   // ── History search & filter ────────────────────────────────────────────────
   searchWrap: {
@@ -840,7 +840,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#E5E7EB',
   },
-  searchInput: { flex: 1, fontSize: 14, color: '#1A1A2E', paddingVertical: 0 },
+  searchInput: { flex: 1, fontSize: 14, color: '#0A0A0A', paddingVertical: 0 },
 
   filterRow: {
     flexDirection: 'row',
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     backgroundColor: '#F3F4F6',
   },
-  filterChipActive: { backgroundColor: '#1A1A2E' },
+  filterChipActive: { backgroundColor: '#0A0A0A' },
   filterChipText: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
   filterChipTextActive: { color: '#FFFFFF' },
   refreshBtn: { marginLeft: 'auto', padding: 4 },
@@ -883,11 +883,11 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  statValue: { fontSize: 22, fontWeight: '800', color: '#1A1A2E' },
+  statValue: { fontSize: 22, fontWeight: '800', color: '#0A0A0A' },
   statLabel: { fontSize: 11, color: '#6B7280', textAlign: 'center' },
 
   // ── Section titles ─────────────────────────────────────────────────────────
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E', marginBottom: 12 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A', marginBottom: 12 },
   sectionTitleGap: { marginTop: 28 },
 
   // ── Empty state ────────────────────────────────────────────────────────────
@@ -925,7 +925,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 4,
   },
-  cardCustomerName: { fontSize: 15, fontWeight: '700', color: '#1A1A2E', flex: 1 },
+  cardCustomerName: { fontSize: 15, fontWeight: '700', color: '#0A0A0A', flex: 1 },
   statusBadge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   statusBadgeText: { fontSize: 11, fontWeight: '700' },
   cardVehicle: { fontSize: 12, color: '#6B7280', marginBottom: 2 },
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
   },
-  updateBtnText: { fontSize: 12, fontWeight: '700', color: '#E94560' },
+  updateBtnText: { fontSize: 12, fontWeight: '700', color: '#E09010' },
   historyMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   historyMetaText: { fontSize: 12, color: '#9CA3AF' },
 
@@ -984,7 +984,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F3F4F6',
   },
   sheetHeaderText: { flex: 1, marginRight: 12 },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E' },
+  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A' },
   sheetSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   formScroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
 
@@ -1015,7 +1015,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   prefix: { paddingLeft: 14, paddingRight: 4, fontSize: 15, fontWeight: '600', color: '#6B7280' },
-  prefixInput: { flex: 1, paddingVertical: 12, paddingRight: 14, fontSize: 15, color: '#1A1A2E' },
+  prefixInput: { flex: 1, paddingVertical: 12, paddingRight: 14, fontSize: 15, color: '#0A0A0A' },
   inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
   errorText: { fontSize: 12, color: '#DC2626', marginTop: 4 },
   fieldInput: {
@@ -1026,17 +1026,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   textArea: { minHeight: 88, paddingTop: 12 },
   saveBtn: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 24,
     marginBottom: 4,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.28,
     shadowRadius: 6,
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
   },
   detailRowText: { flex: 1, justifyContent: 'center' },
   detailLabel: { fontSize: 11, fontWeight: '700', color: '#9CA3AF', letterSpacing: 0.4, marginBottom: 2 },
-  detailValue: { fontSize: 15, fontWeight: '600', color: '#1A1A2E' },
+  detailValue: { fontSize: 15, fontWeight: '600', color: '#0A0A0A' },
   detailNotesWrap: { marginTop: 16 },
   detailNotesBox: {
     backgroundColor: '#F9FAFB',

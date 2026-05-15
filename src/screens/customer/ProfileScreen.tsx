@@ -257,7 +257,7 @@ export function ProfileScreen({ navigation }: Props) {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#E94560" />
+          <ActivityIndicator size="large" color="#E09010" />
         </View>
       </SafeAreaView>
     );
@@ -299,7 +299,7 @@ export function ProfileScreen({ navigation }: Props) {
                 onPress={startEditing}
                 activeOpacity={0.8}
               >
-                <Ionicons name="pencil-outline" size={14} color="#E94560" />
+                <Ionicons name="pencil-outline" size={14} color="#E09010" />
                 <Text style={styles.editProfileBtnText}>Edit Profile</Text>
               </TouchableOpacity>
             )}
@@ -397,7 +397,7 @@ export function ProfileScreen({ navigation }: Props) {
 
               {vehiclesLoading ? (
                 <View style={styles.vehiclesLoadingWrap}>
-                  <ActivityIndicator size="small" color="#E94560" />
+                  <ActivityIndicator size="small" color="#E09010" />
                 </View>
               ) : (
                 <>
@@ -426,7 +426,7 @@ export function ProfileScreen({ navigation }: Props) {
                     activeOpacity={0.8}
                   >
                     <View style={styles.addVehicleIcon}>
-                      <Ionicons name="add" size={20} color="#E94560" />
+                      <Ionicons name="add" size={20} color="#E09010" />
                     </View>
                     <Text style={styles.addVehicleBtnText}>Add Vehicle</Text>
                   </TouchableOpacity>
@@ -570,7 +570,7 @@ function VehicleCard({ vehicle, onEdit, onDelete }: VehicleCardProps) {
   return (
     <View style={vehicleCardStyles.card}>
       <View style={vehicleCardStyles.iconWrap}>
-        <Ionicons name="car-sport-outline" size={22} color="#E94560" />
+        <Ionicons name="car-sport-outline" size={22} color="#E09010" />
       </View>
 
       <View style={vehicleCardStyles.info}>
@@ -633,7 +633,7 @@ const vehicleCardStyles = StyleSheet.create({
   primary: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     letterSpacing: 0.1,
   },
   secondary: {
@@ -655,7 +655,7 @@ const vehicleCardStyles = StyleSheet.create({
   editBtnText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   deleteBtn: {
     padding: 4,
@@ -698,11 +698,11 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     marginBottom: 4,
     letterSpacing: 0.2,
   },
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 9,
   },
-  editProfileBtnText: { fontSize: 14, fontWeight: '700', color: '#E94560' },
+  editProfileBtnText: { fontSize: 14, fontWeight: '700', color: '#E09010' },
 
   // Toast
   toastBanner: {
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
   sectionCount: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#E94560',
+    color: '#E09010',
   },
   cardSectionLabel: {
     fontSize: 11,
@@ -816,7 +816,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E94560',
+    borderColor: '#E09010',
     borderStyle: 'dashed',
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -832,7 +832,7 @@ const styles = StyleSheet.create({
   addVehicleBtnText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#E94560',
+    color: '#E09010',
   },
 
   // Edit form
@@ -868,17 +868,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   inputDisabled: { backgroundColor: '#F3F4F6', color: '#9CA3AF' },
   errorText: { fontSize: 13, color: '#DC2626', marginBottom: 12, marginTop: -4 },
   saveBtn: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 6,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -903,7 +903,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  listLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: '#1A1A2E' },
+  listLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: '#0A0A0A' },
   listSeparator: { height: 1, backgroundColor: '#F3F4F6', marginLeft: 48 },
   dangerText: { color: '#DC2626', fontWeight: '600' },
 });

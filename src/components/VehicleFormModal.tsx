@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     letterSpacing: 0.2,
   },
 
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   fieldInputError: {
     borderColor: '#FCA5A5',
@@ -423,13 +423,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   submitBtn: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 8,
     marginBottom: 4,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.28,
     shadowRadius: 6,

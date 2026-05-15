@@ -175,7 +175,7 @@ export function ServicesScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {loading || seeding ? (
           <View style={styles.emptyState}>
-            <ActivityIndicator color="#E94560" size="large" />
+            <ActivityIndicator color="#E09010" size="large" />
             <Text style={styles.emptySub}>{seeding ? 'Setting up services catalog…' : 'Loading…'}</Text>
           </View>
         ) : services.length === 0 ? (
@@ -196,7 +196,7 @@ export function ServicesScreen() {
               {/* Card header */}
               <View style={styles.cardHeader}>
                 <View style={styles.cardIconWrap}>
-                  <Ionicons name={serviceIconName(s.icon)} size={22} color="#E94560" />
+                  <Ionicons name={serviceIconName(s.icon)} size={22} color="#E09010" />
                 </View>
                 <View style={styles.cardInfo}>
                   <Text style={styles.cardName}>{s.name}</Text>
@@ -220,9 +220,9 @@ export function ServicesScreen() {
                 onPress={() => openEdit(s)}
                 activeOpacity={0.7}
               >
-                <Ionicons name="pencil-outline" size={15} color="#E94560" />
+                <Ionicons name="pencil-outline" size={15} color="#E09010" />
                 <Text style={styles.editBtnText}>Edit Price & Details</Text>
-                <Ionicons name="chevron-forward" size={15} color="#E94560" style={styles.editChevron} />
+                <Ionicons name="chevron-forward" size={15} color="#E09010" style={styles.editChevron} />
               </TouchableOpacity>
             </View>
           ))
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   emptySub: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', marginTop: 8 },
   seedBtn: {
     marginTop: 8,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 10,
     paddingHorizontal: 24,
     paddingVertical: 12,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardInfo: { flex: 1 },
-  cardName: { fontSize: 16, fontWeight: '700', color: '#1A1A2E', marginBottom: 4 },
+  cardName: { fontSize: 16, fontWeight: '700', color: '#0A0A0A', marginBottom: 4 },
   cardDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18, marginBottom: 10 },
   badgeRow: { flexDirection: 'row', gap: 8 },
   priceBadge: {
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  priceBadgeText: { fontSize: 11, fontWeight: '700', color: '#E94560' },
+  priceBadgeText: { fontSize: 11, fontWeight: '700', color: '#E09010' },
   durationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     gap: 8,
   },
-  editBtnText: { fontSize: 13, fontWeight: '600', color: '#E94560', flex: 1 },
+  editBtnText: { fontSize: 13, fontWeight: '600', color: '#E09010', flex: 1 },
   editChevron: { marginLeft: 'auto' },
 
   // ── Bottom sheet ───────────────────────────────────────────────────────────
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E', flex: 1, marginRight: 12 },
+  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A', flex: 1, marginRight: 12 },
 
   // ── Form ───────────────────────────────────────────────────────────────────
   formScroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingRight: 14,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   fieldInput: {
     backgroundColor: '#F9FAFB',
@@ -509,19 +509,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   textArea: { minHeight: 80, paddingTop: 12 },
   fieldInputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
   errorText: { fontSize: 12, color: '#DC2626', marginTop: 4 },
   saveBtn: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 8,
     marginBottom: 4,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.28,
     shadowRadius: 6,

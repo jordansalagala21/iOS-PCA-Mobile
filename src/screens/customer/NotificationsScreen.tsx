@@ -31,6 +31,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#1A1A2E', marginBottom: 10 },
+  title: { fontSize: 20, fontWeight: '700', color: '#0A0A0A', marginBottom: 10 },
   body: { fontSize: 14, color: '#6B7280', textAlign: 'center', lineHeight: 22 },
 });

@@ -300,7 +300,7 @@ export function BookingScreen() {
       <Text style={styles.stepHeading}>Choose a Service</Text>
       <Text style={styles.stepSub}>Select the service that fits your needs</Text>
       {servicesLoading ? (
-        <ActivityIndicator color="#E94560" style={styles.loader} />
+        <ActivityIndicator color="#E09010" style={styles.loader} />
       ) : (
         services.map((s) => {
           const isSelected = selectedService?.id === s.id;
@@ -315,7 +315,7 @@ export function BookingScreen() {
                 <Ionicons
                   name={serviceIconName(s.icon)}
                   size={22}
-                  color={isSelected ? '#FFFFFF' : '#E94560'}
+                  color={isSelected ? '#FFFFFF' : '#E09010'}
                 />
               </View>
               <View style={styles.serviceBody}>
@@ -341,7 +341,7 @@ export function BookingScreen() {
                   From ${s.priceFrom}
                 </Text>
                 {isSelected && (
-                  <Ionicons name="checkmark-circle" size={18} color="#E94560" style={styles.checkIcon} />
+                  <Ionicons name="checkmark-circle" size={18} color="#E09010" style={styles.checkIcon} />
                 )}
               </View>
             </TouchableOpacity>
@@ -363,18 +363,18 @@ export function BookingScreen() {
           minDate={today}
           onDayPress={(day) => handleDayPress(day.dateString)}
           markedDates={
-            selectedDate ? { [selectedDate]: { selected: true, selectedColor: '#E94560' } } : {}
+            selectedDate ? { [selectedDate]: { selected: true, selectedColor: '#E09010' } } : {}
           }
           theme={{
             calendarBackground: '#FFFFFF',
             textSectionTitleColor: '#6B7280',
-            selectedDayBackgroundColor: '#E94560',
+            selectedDayBackgroundColor: '#E09010',
             selectedDayTextColor: '#FFFFFF',
-            todayTextColor: '#E94560',
-            dayTextColor: '#1A1A2E',
+            todayTextColor: '#E09010',
+            dayTextColor: '#0A0A0A',
             textDisabledColor: '#D1D5DB',
-            arrowColor: '#E94560',
-            monthTextColor: '#1A1A2E',
+            arrowColor: '#E09010',
+            monthTextColor: '#0A0A0A',
             textMonthFontWeight: '700',
             textDayFontWeight: '500',
             textDayHeaderFontWeight: '600',
@@ -386,7 +386,7 @@ export function BookingScreen() {
         <>
           <Text style={styles.slotHeading}>Available Times</Text>
           {slotsLoading ? (
-            <ActivityIndicator color="#E94560" style={styles.loader} />
+            <ActivityIndicator color="#E09010" style={styles.loader} />
           ) : (
             <View style={styles.slotsGrid}>
               {TIME_SLOTS.map((slot) => {
@@ -435,7 +435,7 @@ export function BookingScreen() {
       <Text style={styles.stepSub}>Which vehicle are we detailing?</Text>
 
       {vehiclesLoading ? (
-        <ActivityIndicator color="#E94560" style={styles.loader} />
+        <ActivityIndicator color="#E09010" style={styles.loader} />
       ) : (
         <>
           {vehicles.map((v) => {
@@ -454,7 +454,7 @@ export function BookingScreen() {
                   <Ionicons
                     name="car-sport-outline"
                     size={20}
-                    color={isSelected ? '#FFFFFF' : '#E94560'}
+                    color={isSelected ? '#FFFFFF' : '#E09010'}
                   />
                 </View>
                 <View style={styles.vehicleBody}>
@@ -467,7 +467,7 @@ export function BookingScreen() {
                     </Text>
                   ) : null}
                 </View>
-                {isSelected && <Ionicons name="checkmark-circle" size={20} color="#E94560" />}
+                {isSelected && <Ionicons name="checkmark-circle" size={20} color="#E09010" />}
               </TouchableOpacity>
             );
           })}
@@ -477,7 +477,7 @@ export function BookingScreen() {
             onPress={() => setShowAddVehicle(true)}
             activeOpacity={0.7}
           >
-            <Ionicons name="add-circle-outline" size={20} color="#E94560" />
+            <Ionicons name="add-circle-outline" size={20} color="#E09010" />
             <Text style={styles.addVehicleBtnText}>Add New Vehicle</Text>
           </TouchableOpacity>
         </>
@@ -515,7 +515,7 @@ export function BookingScreen() {
               <Ionicons
                 name={isOneTime ? 'calendar-outline' : 'refresh-outline'}
                 size={26}
-                color={isSelected ? '#FFFFFF' : '#E94560'}
+                color={isSelected ? '#FFFFFF' : '#E09010'}
               />
             </View>
             <View style={styles.typeBody}>
@@ -568,7 +568,7 @@ export function BookingScreen() {
               style={[styles.reviewRow, i < reviewItems.length - 1 && styles.reviewRowBorder]}
             >
               <View style={styles.reviewIconWrap}>
-                <Ionicons name={icon} size={16} color="#E94560" />
+                <Ionicons name={icon} size={16} color="#E09010" />
               </View>
               <View style={styles.reviewBody}>
                 <Text style={styles.reviewLabel}>{label}</Text>
@@ -727,7 +727,7 @@ const styles = StyleSheet.create({
   },
   stepItem: { alignItems: 'center', minWidth: 46 },
   stepConnector: { flex: 1, height: 2, marginTop: 13, backgroundColor: '#E5E7EB' },
-  stepConnectorDone: { backgroundColor: '#E94560' },
+  stepConnectorDone: { backgroundColor: '#E09010' },
   stepCircle: {
     width: 28,
     height: 28,
@@ -738,16 +738,16 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     backgroundColor: '#FFFFFF',
   },
-  stepCircleActive: { borderColor: '#E94560', backgroundColor: '#E94560' },
+  stepCircleActive: { borderColor: '#E09010', backgroundColor: '#E09010' },
   stepCircleDone: { borderColor: '#22C55E', backgroundColor: '#22C55E' },
   stepNum: { fontSize: 11, fontWeight: '700', color: '#9CA3AF' },
   stepNumActive: { color: '#FFFFFF' },
   stepLabel: { fontSize: 9, color: '#9CA3AF', marginTop: 4, textAlign: 'center' },
-  stepLabelActive: { color: '#E94560', fontWeight: '600' },
+  stepLabelActive: { color: '#E09010', fontWeight: '600' },
 
   // ── Step content ───────────────────────────────────────────────────────────
   stepContent: { padding: 20 },
-  stepHeading: { fontSize: 20, fontWeight: '800', color: '#1A1A2E', marginBottom: 4 },
+  stepHeading: { fontSize: 20, fontWeight: '800', color: '#0A0A0A', marginBottom: 4 },
   stepSub: { fontSize: 13, color: '#6B7280', marginBottom: 20 },
   loader: { marginTop: 40 },
 
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  serviceCardSelected: { borderColor: '#E94560', backgroundColor: '#1A1A2E' },
+  serviceCardSelected: { borderColor: '#E09010', backgroundColor: '#0A0A0A' },
   serviceIconWrap: {
     width: 44,
     height: 44,
@@ -777,9 +777,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 14,
   },
-  serviceIconWrapSelected: { backgroundColor: '#E94560' },
+  serviceIconWrapSelected: { backgroundColor: '#E09010' },
   serviceBody: { flex: 1 },
-  serviceName: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
+  serviceName: { fontSize: 15, fontWeight: '700', color: '#0A0A0A' },
   serviceNameSel: { color: '#FFFFFF' },
   serviceDesc: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   serviceDescSel: { color: '#9CA3AF' },
@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
   serviceMetaText: { fontSize: 12, color: '#9CA3AF' },
   serviceMetaTextSel: { color: '#D1D5DB' },
   servicePriceCol: { alignItems: 'flex-end' },
-  servicePrice: { fontSize: 13, fontWeight: '700', color: '#1A1A2E' },
+  servicePrice: { fontSize: 13, fontWeight: '700', color: '#0A0A0A' },
   servicePriceSel: { color: '#FFFFFF' },
   checkIcon: { marginTop: 6 },
 
@@ -803,7 +803,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  slotHeading: { fontSize: 15, fontWeight: '700', color: '#1A1A2E', marginBottom: 12 },
+  slotHeading: { fontSize: 15, fontWeight: '700', color: '#0A0A0A', marginBottom: 12 },
   slotsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   slotPill: {
     borderWidth: 1.5,
@@ -815,10 +815,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 82,
   },
-  slotPillSelected: { borderColor: '#E94560', backgroundColor: '#FFF1F3' },
+  slotPillSelected: { borderColor: '#E09010', backgroundColor: '#FFF1F3' },
   slotPillUnavailable: { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' },
-  slotTime: { fontSize: 13, fontWeight: '600', color: '#1A1A2E' },
-  slotTimeSel: { color: '#E94560' },
+  slotTime: { fontSize: 13, fontWeight: '600', color: '#0A0A0A' },
+  slotTimeSel: { color: '#E09010' },
   slotTimeUnavail: { color: '#D1D5DB' },
   slotFullyBooked: { fontSize: 9, color: '#D1D5DB', marginTop: 2, fontWeight: '500' },
 
@@ -839,7 +839,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  vehicleCardSelected: { borderColor: '#E94560', backgroundColor: '#1A1A2E' },
+  vehicleCardSelected: { borderColor: '#E09010', backgroundColor: '#0A0A0A' },
   vehicleIconWrap: {
     width: 44,
     height: 44,
@@ -848,9 +848,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vehicleIconWrapSel: { backgroundColor: '#E94560' },
+  vehicleIconWrapSel: { backgroundColor: '#E09010' },
   vehicleBody: { flex: 1 },
-  vehicleName: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
+  vehicleName: { fontSize: 15, fontWeight: '700', color: '#0A0A0A' },
   vehicleNameSel: { color: '#FFFFFF' },
   vehicleSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
   vehicleSubSel: { color: '#9CA3AF' },
@@ -860,13 +860,13 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     borderWidth: 1.5,
-    borderColor: '#E94560',
+    borderColor: '#E09010',
     borderStyle: 'dashed',
     borderRadius: 12,
     justifyContent: 'center',
     marginTop: 4,
   },
-  addVehicleBtnText: { fontSize: 14, fontWeight: '600', color: '#E94560' },
+  addVehicleBtnText: { fontSize: 14, fontWeight: '600', color: '#E09010' },
 
   // ── Booking type cards (step 4) ────────────────────────────────────────────
   typeCard: {
@@ -884,7 +884,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  typeCardSelected: { borderColor: '#E94560', backgroundColor: '#1A1A2E' },
+  typeCardSelected: { borderColor: '#E09010', backgroundColor: '#0A0A0A' },
   typeIconCircle: {
     width: 52,
     height: 52,
@@ -894,9 +894,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 16,
   },
-  typeIconCircleSel: { backgroundColor: '#E94560' },
+  typeIconCircleSel: { backgroundColor: '#E09010' },
   typeBody: { flex: 1 },
-  typeTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A2E', marginBottom: 4 },
+  typeTitle: { fontSize: 16, fontWeight: '700', color: '#0A0A0A', marginBottom: 4 },
   typeTitleSel: { color: '#FFFFFF' },
   typeDesc: { fontSize: 12, color: '#6B7280', lineHeight: 17 },
   typeDescSel: { color: '#9CA3AF' },
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   typePriceBadgeSel: { backgroundColor: 'rgba(255,255,255,0.15)' },
-  typePriceBadgeText: { fontSize: 11, fontWeight: '700', color: '#E94560' },
+  typePriceBadgeText: { fontSize: 11, fontWeight: '700', color: '#E09010' },
   typePriceBadgeTextSel: { color: '#FFFFFF' },
   typeRadio: {
     width: 22,
@@ -921,8 +921,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 12,
   },
-  typeRadioSelected: { borderColor: '#E94560' },
-  typeRadioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#E94560' },
+  typeRadioSelected: { borderColor: '#E09010' },
+  typeRadioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#E09010' },
 
   // ── Review (step 5) ────────────────────────────────────────────────────────
   reviewCard: {
@@ -954,9 +954,9 @@ const styles = StyleSheet.create({
   },
   reviewBody: { flex: 1 },
   reviewLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '500', marginBottom: 2 },
-  reviewValue: { fontSize: 14, fontWeight: '700', color: '#1A1A2E' },
+  reviewValue: { fontSize: 14, fontWeight: '700', color: '#0A0A0A' },
   totalCard: {
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
     borderRadius: 14,
     padding: 18,
     flexDirection: 'row',
@@ -1001,14 +1001,14 @@ const styles = StyleSheet.create({
   backBtnText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
   nextBtn: {
     flex: 1,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -1033,7 +1033,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  successTitle: { fontSize: 24, fontWeight: '800', color: '#1A1A2E', marginBottom: 8 },
+  successTitle: { fontSize: 24, fontWeight: '800', color: '#0A0A0A', marginBottom: 8 },
   successSub: {
     fontSize: 14,
     color: '#6B7280',
@@ -1065,27 +1065,27 @@ const styles = StyleSheet.create({
   successRowValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     maxWidth: '65%',
     textAlign: 'right',
   },
   successRowValueAccent: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#E94560',
+    color: '#E09010',
     maxWidth: '65%',
     textAlign: 'right',
   },
   homeBtn: {
     width: '100%',
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 14,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

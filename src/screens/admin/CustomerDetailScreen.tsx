@@ -66,7 +66,7 @@ type Appointment = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const AVATAR_COLORS = ['#E94560', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
+const AVATAR_COLORS = ['#E09010', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
 function avatarBg(name: string): string {
   return AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 }
@@ -448,7 +448,7 @@ export function CustomerDetailScreen({ navigation, route }: Props) {
         {/* ── Service History ─────────────────────────────────────────── */}
         <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Service History</Text>
         {loadingAppts ? (
-          <ActivityIndicator color="#E94560" style={styles.loader} />
+          <ActivityIndicator color="#E09010" style={styles.loader} />
         ) : appointments.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="calendar-outline" size={32} color="#D1D5DB" />
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8F8FA' },
 
   // ── Header ──────────────────────────────────────────────────────────────────
-  headerSafe: { backgroundColor: '#1A1A2E' },
+  headerSafe: { backgroundColor: '#0A0A0A' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   // ── Profile ──────────────────────────────────────────────────────────────────
   profileSection: {
     alignItems: 'center',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
     paddingTop: 20,
     paddingBottom: 28,
     paddingHorizontal: 24,
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderColor: '#F3F4F6',
   },
-  statValue: { fontSize: 17, fontWeight: '800', color: '#1A1A2E' },
+  statValue: { fontSize: 17, fontWeight: '800', color: '#0A0A0A' },
   statLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '500' },
 
   // ── Banners ──────────────────────────────────────────────────────────────────
@@ -653,11 +653,11 @@ const styles = StyleSheet.create({
   inactiveBannerTitle: { fontSize: 13, fontWeight: '700', color: '#92400E' },
   inactiveBannerSub: { fontSize: 12, color: '#B45309', marginTop: 2 },
   nudgeBtn: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -682,7 +682,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     marginHorizontal: 16,
     marginTop: 24,
     marginBottom: 10,
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   apptMain: { flex: 1, gap: 3 },
-  apptService: { fontSize: 14, fontWeight: '700', color: '#1A1A2E' },
+  apptService: { fontSize: 14, fontWeight: '700', color: '#0A0A0A' },
   apptVehicle: { fontSize: 12, color: '#6B7280' },
   apptDate: { fontSize: 12, color: '#9CA3AF' },
   apptRight: { alignItems: 'flex-end', gap: 6 },
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F3F4F6',
   },
   sheetHeaderText: { flex: 1, marginRight: 12 },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E' },
+  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A' },
   sheetSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   sheetContent: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
@@ -779,7 +779,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: 20,
@@ -789,10 +789,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 15,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

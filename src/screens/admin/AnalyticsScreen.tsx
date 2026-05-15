@@ -171,7 +171,7 @@ export function AnalyticsScreen() {
       label: 'Revenue MTD',
       icon: 'cash-outline' as const,
       value: formatCurrency(stats.revenueMTD),
-      accent: '#E94560',
+      accent: '#E09010',
       bg: '#FFF1F3',
     },
     {
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 12, color: '#6B7280' },
 
   // ── Section ────────────────────────────────────────────────────────────────
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E', marginBottom: 12 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A', marginBottom: 12 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   // ── Top Services ───────────────────────────────────────────────────────────
   serviceRow: { marginBottom: 16 },
   serviceRowHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  serviceName: { fontSize: 14, fontWeight: '600', color: '#1A1A2E', flex: 1, marginRight: 8 },
+  serviceName: { fontSize: 14, fontWeight: '600', color: '#0A0A0A', flex: 1, marginRight: 8 },
   serviceCount: { fontSize: 12, fontWeight: '600', color: '#9CA3AF' },
   barTrack: {
     height: 8,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 4,
   },
-  barFill: { height: 8, backgroundColor: '#E94560', borderRadius: 4 },
+  barFill: { height: 8, backgroundColor: '#E09010', borderRadius: 4 },
   barPct: { fontSize: 11, color: '#9CA3AF', fontWeight: '600' },
 
   emptyInCard: { alignItems: 'center', paddingVertical: 24, gap: 8 },
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   trendBarFill: {
     width: 32,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 6,
     minHeight: 4,
   },

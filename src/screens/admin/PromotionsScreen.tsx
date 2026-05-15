@@ -195,13 +195,13 @@ const previewStyles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  appIconText: { color: '#E94560', fontSize: 11, fontWeight: '800' },
+  appIconText: { color: '#E09010', fontSize: 11, fontWeight: '800' },
   bannerText: { flex: 1 },
-  bannerTitle: { fontSize: 13, fontWeight: '700', color: '#1A1A2E', marginBottom: 2 },
+  bannerTitle: { fontSize: 13, fontWeight: '700', color: '#0A0A0A', marginBottom: 2 },
   bannerMsg: { fontSize: 12, color: '#6B7280', lineHeight: 16 },
 });
 
@@ -385,7 +385,7 @@ export function PromotionsScreen() {
         <Text style={styles.sectionTitle}>Active Promotions</Text>
 
         {loadingList ? (
-          <ActivityIndicator color="#E94560" style={styles.loader} />
+          <ActivityIndicator color="#E09010" style={styles.loader} />
         ) : promotions.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="pricetag-outline" size={40} color="#D1D5DB" />
@@ -433,13 +433,13 @@ export function PromotionsScreen() {
                   </View>
                 ) : (
                   <View style={styles.chip}>
-                    <ActivityIndicator size="small" color="#E94560" style={{ transform: [{ scale: 0.6 }] }} />
-                    <Text style={[styles.chipText, { color: '#E94560' }]}>Sending…</Text>
+                    <ActivityIndicator size="small" color="#E09010" style={{ transform: [{ scale: 0.6 }] }} />
+                    <Text style={[styles.chipText, { color: '#E09010' }]}>Sending…</Text>
                   </View>
                 )}
                 {p.discount !== null && (
                   <View style={[styles.chip, styles.chipAccent]}>
-                    <Text style={[styles.chipText, { color: '#E94560' }]}>{p.discount}% off</Text>
+                    <Text style={[styles.chipText, { color: '#E09010' }]}>{p.discount}% off</Text>
                   </View>
                 )}
                 <View style={[styles.chip, styles.chipGray]}>
@@ -558,7 +558,7 @@ export function PromotionsScreen() {
                         <Ionicons
                           name={opt.icon as React.ComponentProps<typeof Ionicons>['name']}
                           size={20}
-                          color={form.targetAudience === opt.key ? '#E94560' : '#9CA3AF'}
+                          color={form.targetAudience === opt.key ? '#E09010' : '#9CA3AF'}
                         />
                         <Text
                           style={[
@@ -593,7 +593,7 @@ export function PromotionsScreen() {
                         <Ionicons
                           name={opt.icon as React.ComponentProps<typeof Ionicons>['name']}
                           size={20}
-                          color={form.sendTiming === opt.key ? '#E94560' : '#9CA3AF'}
+                          color={form.sendTiming === opt.key ? '#E09010' : '#9CA3AF'}
                         />
                         <Text
                           style={[
@@ -690,18 +690,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 14,
     paddingVertical: 14,
     marginBottom: 24,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
   addButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E', marginBottom: 12 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A', marginBottom: 12 },
 
   emptyState: { alignItems: 'center', paddingVertical: 48, gap: 8 },
   emptyTitle: { fontSize: 16, fontWeight: '600', color: '#9CA3AF' },
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   promoInfo: { flex: 1 },
-  promoTitle: { fontSize: 15, fontWeight: '700', color: '#1A1A2E', marginBottom: 4 },
+  promoTitle: { fontSize: 15, fontWeight: '700', color: '#0A0A0A', marginBottom: 4 },
   promoMessage: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
   deleteBtn: { padding: 4 },
   promoFooter: {
@@ -768,7 +768,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderTopLeftRadius: 24,
@@ -798,7 +798,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
   textArea: { minHeight: 80, paddingTop: 12, textAlignVertical: 'top' },
@@ -818,7 +818,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
     fontSize: 15,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   suffix: { paddingRight: 14, fontSize: 15, fontWeight: '600', color: '#6B7280' },
 
@@ -834,9 +834,9 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     backgroundColor: '#F9FAFB',
   },
-  audienceCardActive: { borderColor: '#E94560', backgroundColor: '#FFF1F3' },
+  audienceCardActive: { borderColor: '#E09010', backgroundColor: '#FFF1F3' },
   audienceCardText: { fontSize: 12, fontWeight: '600', color: '#9CA3AF', textAlign: 'center' },
-  audienceCardTextActive: { color: '#E94560' },
+  audienceCardTextActive: { color: '#E09010' },
 
   scheduleRow: { flexDirection: 'row', gap: 10 },
   scheduleDateInput: { flex: 2 },
@@ -847,11 +847,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 8,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

@@ -48,9 +48,9 @@ const QUICK_ACTIONS = [
     icon: 'time-outline' as const,
     label: 'Appointments',
     sub: 'View upcoming bookings',
-    iconBg: '#EEF2FF',
-    iconColor: '#4F46E5',
-    accentColor: '#4F46E5',
+    iconBg: 'rgba(224, 144, 16, 0.15)',
+    iconColor: '#E09010',
+    accentColor: '#E09010',
     count: 0,
   },
   {
@@ -58,9 +58,9 @@ const QUICK_ACTIONS = [
     icon: 'notifications-outline' as const,
     label: 'Notifications',
     sub: 'Recent updates',
-    iconBg: '#FFF7ED',
-    iconColor: '#EA580C',
-    accentColor: '#EA580C',
+    iconBg: 'rgba(224, 144, 16, 0.15)',
+    iconColor: '#E09010',
+    accentColor: '#E09010',
     count: 0,
   },
 ];
@@ -138,7 +138,7 @@ export function HomeScreen() {
           <View style={styles.heroButtonWrapper}>
             <View style={styles.heroButton}>
               <Text style={styles.heroButtonText}>Book Now</Text>
-              <Ionicons name="arrow-forward" size={14} color="#1A1A2E" />
+              <Ionicons name="arrow-forward" size={14} color="#0A0A0A" />
             </View>
           </View>
         </TouchableOpacity>
@@ -163,8 +163,8 @@ export function HomeScreen() {
                 <Text style={styles.quickLabel}>{action.label}</Text>
                 <Text style={styles.quickSub}>{action.sub}</Text>
               </View>
-              <View style={[styles.countBadge, { backgroundColor: action.iconBg }]}>
-                <Text style={[styles.countText, { color: action.iconColor }]}>
+              <View style={[styles.countBadge, { backgroundColor: '#E09010' }]}>
+                <Text style={[styles.countText, { color: '#000000' }]}>
                   {action.count}
                 </Text>
               </View>
@@ -189,7 +189,7 @@ export function HomeScreen() {
 
         {servicesLoading ? (
           <View style={styles.servicesLoader}>
-            <ActivityIndicator color="#E94560" />
+            <ActivityIndicator color="#E09010" />
           </View>
         ) : (
           <View style={styles.servicesGrid}>
@@ -204,7 +204,7 @@ export function HomeScreen() {
                   <Text style={styles.priceBadgeText}>from ${s.priceFrom}</Text>
                 </View>
                 <View style={styles.serviceIconWrapper}>
-                  <Ionicons name={serviceIconName(s.icon)} size={28} color="#E94560" />
+                  <Ionicons name={serviceIconName(s.icon)} size={28} color="#E09010" />
                 </View>
                 <Text style={styles.serviceLabel}>{s.name}</Text>
               </TouchableOpacity>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 20,
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
   },
   greeting: {
     fontSize: 20,
@@ -246,10 +246,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
@@ -265,14 +265,14 @@ const styles = StyleSheet.create({
   heroBanner: {
     marginHorizontal: 16,
     marginTop: 16,
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
     borderRadius: 20,
     padding: 24,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
     minHeight: 130,
-    shadowColor: '#1A1A2E',
+    shadowColor: '#0A0A0A',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.28,
     shadowRadius: 14,
@@ -283,8 +283,8 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: '#E94560',
-    opacity: 0.09,
+    backgroundColor: '#E09010',
+    opacity: 0.15,
     right: -40,
     top: -50,
   },
@@ -293,8 +293,8 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#E94560',
-    opacity: 0.13,
+    backgroundColor: '#E09010',
+    opacity: 0.15,
     right: 55,
     bottom: -25,
   },
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   heroEyebrow: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#E94560',
+    color: '#E09010',
     letterSpacing: 1.8,
     marginBottom: 6,
   },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   heroButtonText: {
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     fontWeight: '700',
     fontSize: 13,
   },
@@ -362,13 +362,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     letterSpacing: 0.2,
   },
   seeAll: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#E94560',
+    color: '#E09010',
   },
 
   // ── Quick Action Cards ────────────────────────────────────────────────────
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   quickLabel: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     letterSpacing: 0.1,
   },
   quickSub: {
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: '#FFF1F3',
+    backgroundColor: 'rgba(224, 144, 16, 0.12)',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -463,14 +463,14 @@ const styles = StyleSheet.create({
   priceBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#E94560',
+    color: '#E09010',
     letterSpacing: 0.2,
   },
   serviceIconWrapper: {
     width: 52,
     height: 52,
     borderRadius: 14,
-    backgroundColor: '#FFF1F3',
+    backgroundColor: 'rgba(224, 144, 16, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   serviceLabel: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     letterSpacing: 0.1,
   },
 });

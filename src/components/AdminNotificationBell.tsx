@@ -156,7 +156,7 @@ export function AdminNotificationBell() {
                   <View
                     style={[
                       styles.notifDot,
-                      { backgroundColor: n.read ? 'transparent' : '#E94560' },
+                      { backgroundColor: n.read ? 'transparent' : '#E09010' },
                     ]}
                   />
                   <View style={styles.notifContent}>
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -6,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 8,
     minWidth: 16,
     height: 16,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 3,
     borderWidth: 1.5,
-    borderColor: '#1A1A2E',
+    borderColor: '#0A0A0A',
   },
   badgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  panelTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A2E' },
+  panelTitle: { fontSize: 17, fontWeight: '700', color: '#0A0A0A' },
   listContent: { paddingVertical: 8 },
   empty: { alignItems: 'center', paddingVertical: 40, gap: 10 },
   emptyText: { fontSize: 14, color: '#9CA3AF' },
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   notifDot: { width: 8, height: 8, borderRadius: 4, marginTop: 5 },
   notifContent: { flex: 1 },
   notifTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
-  notifTitle: { fontSize: 14, fontWeight: '700', color: '#1A1A2E', flex: 1, marginRight: 8 },
+  notifTitle: { fontSize: 14, fontWeight: '700', color: '#0A0A0A', flex: 1, marginRight: 8 },
   notifTime: { fontSize: 11, color: '#9CA3AF', fontWeight: '500' },
   notifMessage: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
 });

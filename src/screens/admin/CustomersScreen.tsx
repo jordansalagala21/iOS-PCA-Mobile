@@ -28,7 +28,7 @@ type CustomerDoc = {
   createdAt: { toDate: () => Date } | null;
 };
 
-const AVATAR_COLORS = ['#E94560', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
+const AVATAR_COLORS = ['#E09010', '#4F46E5', '#059669', '#D97706', '#7C3AED', '#0891B2'];
 function avatarBg(name: string): string {
   return AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 }
@@ -120,7 +120,7 @@ export function CustomersScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {loading ? (
-          <ActivityIndicator color="#E94560" style={styles.loader} />
+          <ActivityIndicator color="#E09010" style={styles.loader} />
         ) : filtered.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="people-outline" size={40} color="#D1D5DB" />
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, paddingVertical: 12, fontSize: 15, color: '#1A1A2E' },
+  searchInput: { flex: 1, paddingVertical: 12, fontSize: 15, color: '#0A0A0A' },
 
   countLabel: {
     fontSize: 12,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
   info: { flex: 1, gap: 4 },
-  name: { fontSize: 16, fontWeight: '700', color: '#1A1A2E' },
+  name: { fontSize: 16, fontWeight: '700', color: '#0A0A0A' },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   detailText: { fontSize: 13, color: '#6B7280', flex: 1 },
 

@@ -10,7 +10,7 @@ export function RootNavigator() {
   if (loading) {
     return (
       <View style={styles.splash}>
-        <ActivityIndicator size="large" color="#E94560" />
+        <ActivityIndicator size="large" color="#E09010" />
       </View>
     );
   }
@@ -23,6 +23,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#0A0A0A',
   },
 });

@@ -108,7 +108,7 @@ export function BookScreen() {
 
         {vehiclesLoading ? (
           <View style={styles.loadingWrap}>
-            <ActivityIndicator size="large" color="#E94560" />
+            <ActivityIndicator size="large" color="#E09010" />
           </View>
         ) : vehicles.length === 0 ? (
           <View style={styles.emptyWrap}>
@@ -141,7 +141,7 @@ export function BookScreen() {
                     <Ionicons
                       name="car-sport-outline"
                       size={22}
-                      color={isSelected ? '#FFFFFF' : '#E94560'}
+                      color={isSelected ? '#FFFFFF' : '#E09010'}
                     />
                   </View>
                   <View style={styles.vehicleCardBody}>
@@ -161,7 +161,7 @@ export function BookScreen() {
                     ) : null}
                   </View>
                   {isSelected && (
-                    <Ionicons name="checkmark-circle" size={22} color="#E94560" />
+                    <Ionicons name="checkmark-circle" size={22} color="#E09010" />
                   )}
                 </TouchableOpacity>
               );
@@ -172,7 +172,7 @@ export function BookScreen() {
               onPress={() => navigation.navigate('Profile')}
               activeOpacity={0.7}
             >
-              <Ionicons name="add-circle-outline" size={18} color="#E94560" />
+              <Ionicons name="add-circle-outline" size={18} color="#E09010" />
               <Text style={styles.addVehicleInlineText}>Add another vehicle</Text>
             </TouchableOpacity>
           </>
@@ -200,13 +200,13 @@ export function BookScreen() {
         onPress={() => setStep('vehicle')}
         activeOpacity={0.7}
       >
-        <Ionicons name="chevron-back" size={18} color="#E94560" />
+        <Ionicons name="chevron-back" size={18} color="#E09010" />
         <Text style={styles.backText}>Change vehicle</Text>
       </TouchableOpacity>
 
       {selectedVehicle && (
         <View style={styles.contextChip}>
-          <Ionicons name="car-sport-outline" size={14} color="#E94560" />
+          <Ionicons name="car-sport-outline" size={14} color="#E09010" />
           <Text style={styles.contextChipText} numberOfLines={1}>
             {vehicleDisplayName(selectedVehicle)}
           </Text>
@@ -229,7 +229,7 @@ export function BookScreen() {
               <Ionicons
                 name={service.icon}
                 size={24}
-                color={isSelected ? '#FFFFFF' : '#E94560'}
+                color={isSelected ? '#FFFFFF' : '#E09010'}
               />
             </View>
             <View style={styles.cardBody}>
@@ -254,7 +254,7 @@ export function BookScreen() {
               {service.price}
             </Text>
             {isSelected && (
-              <Ionicons name="checkmark-circle" size={20} color="#E94560" style={styles.check} />
+              <Ionicons name="checkmark-circle" size={20} color="#E09010" style={styles.check} />
             )}
           </TouchableOpacity>
         );
@@ -292,11 +292,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A2E' },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#0A0A0A' },
   emptySub: { fontSize: 13, color: '#9CA3AF', textAlign: 'center' },
   goToProfileBtn: {
     marginTop: 12,
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingHorizontal: 24,
     paddingVertical: 12,
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  vehicleCardSelected: { borderColor: '#E94560', backgroundColor: '#1A1A2E' },
+  vehicleCardSelected: { borderColor: '#E09010', backgroundColor: '#0A0A0A' },
   vehicleIconWrap: {
     width: 46,
     height: 46,
@@ -327,9 +327,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vehicleIconWrapSelected: { backgroundColor: '#E94560' },
+  vehicleIconWrapSelected: { backgroundColor: '#E09010' },
   vehicleCardBody: { flex: 1, minWidth: 0 },
-  vehicleCardName: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
+  vehicleCardName: { fontSize: 15, fontWeight: '700', color: '#0A0A0A' },
   vehicleCardNameSelected: { color: '#FFFFFF' },
   vehicleCardSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
   vehicleCardSubSelected: { color: '#9CA3AF' },
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     marginBottom: 4,
   },
-  addVehicleInlineText: { fontSize: 14, fontWeight: '600', color: '#E94560' },
+  addVehicleInlineText: { fontSize: 14, fontWeight: '600', color: '#E09010' },
 
   // ── Service step ────────────────────────────────────────────────────────────
   backRow: {
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     gap: 2,
     marginBottom: 10,
   },
-  backText: { fontSize: 14, fontWeight: '600', color: '#E94560' },
+  backText: { fontSize: 14, fontWeight: '600', color: '#E09010' },
   contextChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   contextChipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#E94560',
+    color: '#E09010',
   },
   card: {
     flexDirection: 'row',
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-  cardSelected: { borderColor: '#E94560', backgroundColor: '#1A1A2E' },
+  cardSelected: { borderColor: '#E09010', backgroundColor: '#0A0A0A' },
   iconWrap: {
     width: 48,
     height: 48,
@@ -393,24 +393,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  iconWrapSelected: { backgroundColor: '#E94560' },
+  iconWrapSelected: { backgroundColor: '#E09010' },
   cardBody: { flex: 1 },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#1A1A2E' },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: '#0A0A0A' },
   cardTitleSelected: { color: '#FFFFFF' },
   cardDesc: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   cardDescSelected: { color: '#9CA3AF' },
   cardMeta: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   metaText: { fontSize: 12, color: '#9CA3AF' },
   metaTextSelected: { color: '#D1D5DB' },
-  price: { fontSize: 14, fontWeight: '700', color: '#1A1A2E', marginLeft: 8 },
+  price: { fontSize: 14, fontWeight: '700', color: '#0A0A0A', marginLeft: 8 },
   priceSelected: { color: '#FFFFFF' },
   check: { marginLeft: 8 },
 
   // ── Shared ──────────────────────────────────────────────────────────────────
-  heading: { fontSize: 22, fontWeight: '800', color: '#1A1A2E', marginBottom: 4 },
+  heading: { fontSize: 22, fontWeight: '800', color: '#0A0A0A', marginBottom: 4 },
   subheading: { fontSize: 14, color: '#6B7280', marginBottom: 20 },
   ctaButton: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 14,
     paddingVertical: 16,
     flexDirection: 'row',
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     marginTop: 8,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

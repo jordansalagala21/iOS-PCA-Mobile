@@ -45,15 +45,15 @@ function AdminTabs() {
           const [active, inactive] = ICONS[route.name as keyof AdminTabParamList];
           return <Ionicons name={focused ? active : inactive} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#E94560',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: '#E09010',
+        tabBarInactiveTintColor: '#666666',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#F3F4F6',
+          backgroundColor: '#0A0A0A',
+          borderTopColor: '#222222',
           borderTopWidth: 1,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
-        headerStyle: { backgroundColor: '#1A1A2E' },
+        headerStyle: { backgroundColor: '#0A0A0A' },
         headerTintColor: '#FFFFFF',
         headerTitleStyle: { fontWeight: '700', fontSize: 17 },
       })}

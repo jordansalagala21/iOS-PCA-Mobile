@@ -3,6 +3,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -72,9 +73,11 @@ export function LoginScreen({ navigation }: Props) {
         >
           {/* Logo */}
           <View style={styles.header}>
-            <View style={styles.logoMark}>
-              <Text style={styles.logoLetters}>PC</Text>
-            </View>
+            <Image
+              source={require('../../../assets/icon.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
             <Text style={styles.appName}>Perfect Choice</Text>
             <Text style={styles.tagline}>Premium Auto Detailing</Text>
           </View>
@@ -161,36 +164,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 48,
     paddingBottom: 40,
+    backgroundColor: '#FFFFFF',
   },
-  logoMark: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: '#1A1A2E',
-    alignItems: 'center',
-    justifyContent: 'center',
+  logo: {
+    width: 140,
+    height: 140,
     marginBottom: 16,
-    shadowColor: '#1A1A2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  logoLetters: {
-    color: '#E94560',
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: 1,
   },
   appName: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     letterSpacing: 0.3,
   },
   tagline: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#E09010',
     marginTop: 4,
     letterSpacing: 0.5,
   },
@@ -209,7 +198,7 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: '#0A0A0A',
     marginBottom: 4,
   },
   formSubtitle: {
@@ -235,7 +224,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1A1A2E',
+    color: '#0A0A0A',
   },
   errorText: {
     fontSize: 13,
@@ -244,12 +233,12 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   button: {
-    backgroundColor: '#E94560',
+    backgroundColor: '#E09010',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
-    shadowColor: '#E94560',
+    shadowColor: '#E09010',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -277,6 +266,6 @@ const styles = StyleSheet.create({
   footerLink: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#E94560',
+    color: '#E09010',
   },
 });
