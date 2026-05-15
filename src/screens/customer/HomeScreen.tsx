@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import { collection, doc, onSnapshot, orderBy, query, where, writeBatch } from 'firebase/firestore';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -42,28 +42,6 @@ function serviceIconName(icon: string): IoniconsName {
   return ICON_MAP[icon] ?? 'sparkles-outline';
 }
 
-const QUICK_ACTIONS = [
-  {
-    id: 'Appointments' as const,
-    icon: 'time-outline' as const,
-    label: 'Appointments',
-    sub: 'View upcoming bookings',
-    iconBg: 'rgba(224, 144, 16, 0.15)',
-    iconColor: '#E09010',
-    accentColor: '#E09010',
-    count: 0,
-  },
-  {
-    id: 'Notifications' as const,
-    icon: 'notifications-outline' as const,
-    label: 'Notifications',
-    sub: 'Recent updates',
-    iconBg: 'rgba(224, 144, 16, 0.15)',
-    iconColor: '#E09010',
-    accentColor: '#E09010',
-    count: 0,
-  },
-];
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -79,6 +57,59 @@ export function HomeScreen() {
 
   const [services, setServices] = useState<ServiceDoc[]>([]);
   const [servicesLoading, setServicesLoading] = useState(true);
+
+  const [upcomingCount, setUpcomingCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [vehicleCount, setVehicleCount] = useState(0);
+  const unreadNotifIds = useRef<string[]>([]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const today = new Date().toISOString().split('T')[0];
+    const unsub = onSnapshot(
+      query(collection(db, 'appointments'), where('customerId', '==', user.uid)),
+      (snap) => {
+        setUpcomingCount(
+          snap.docs.filter((d) => {
+            const { status, date } = d.data();
+            return (status === 'pending' || status === 'in-progress') && (date ?? '') >= today;
+          }).length,
+        );
+      },
+    );
+    return unsub;
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = onSnapshot(
+      query(collection(db, 'notifications'), where('recipientId', '==', user.uid)),
+      (snap) => {
+        const unread = snap.docs.filter((d) => !d.data().read);
+        unreadNotifIds.current = unread.map((d) => d.id);
+        setUnreadCount(unread.length);
+      },
+    );
+    return unsub;
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = onSnapshot(collection(db, 'users', user.uid, 'vehicles'), (snap) => {
+      setVehicleCount(snap.docs.length);
+    });
+    return unsub;
+  }, [user?.uid]);
+
+  const handleNotificationsPress = async () => {
+    const ids = unreadNotifIds.current;
+    if (ids.length > 0) {
+      const batch = writeBatch(db);
+      ids.forEach((id) => batch.update(doc(db, 'notifications', id), { read: true }));
+      batch.commit().catch(() => {});
+    }
+    navigation.navigate('Notifications');
+  };
 
   useEffect(() => {
     const q = query(collection(db, 'services'), orderBy('priceFrom', 'asc'));
@@ -149,33 +180,86 @@ export function HomeScreen() {
           <Text style={styles.sectionTitle}>Quick Access</Text>
         </View>
         <View style={styles.quickColumn}>
-          {QUICK_ACTIONS.map((action) => (
-            <TouchableOpacity
-              key={action.id}
-              style={[styles.quickCard, { borderLeftColor: action.accentColor }]}
-              onPress={() => navigation.navigate(action.id)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.quickIcon, { backgroundColor: action.iconBg }]}>
-                <Ionicons name={action.icon} size={22} color={action.iconColor} />
-              </View>
-              <View style={styles.quickInfo}>
-                <Text style={styles.quickLabel}>{action.label}</Text>
-                <Text style={styles.quickSub}>{action.sub}</Text>
-              </View>
-              <View style={[styles.countBadge, { backgroundColor: '#E09010' }]}>
-                <Text style={[styles.countText, { color: '#000000' }]}>
-                  {action.count}
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color="#D1D5DB"
-                style={styles.chevron}
-              />
-            </TouchableOpacity>
-          ))}
+          {/* Appointments */}
+          <TouchableOpacity
+            style={[styles.quickCard, { borderLeftColor: '#E09010' }]}
+            onPress={() => navigation.navigate('Appointments')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.quickIcon, { backgroundColor: 'rgba(224, 144, 16, 0.15)' }]}>
+              <Ionicons name="time-outline" size={22} color="#E09010" />
+            </View>
+            <View style={styles.quickInfo}>
+              <Text style={styles.quickLabel}>Appointments</Text>
+              <Text style={styles.quickSub}>
+                {upcomingCount === 0
+                  ? 'No upcoming bookings'
+                  : upcomingCount === 1
+                  ? '1 upcoming booking'
+                  : `${upcomingCount} upcoming bookings`}
+              </Text>
+            </View>
+            <View style={[styles.countBadge, { backgroundColor: upcomingCount > 0 ? '#E09010' : '#E5E7EB' }]}>
+              <Text style={[styles.countText, { color: upcomingCount > 0 ? '#000000' : '#9CA3AF' }]}>
+                {upcomingCount}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#D1D5DB" style={styles.chevron} />
+          </TouchableOpacity>
+
+          {/* Notifications */}
+          <TouchableOpacity
+            style={[styles.quickCard, { borderLeftColor: '#E09010' }]}
+            onPress={handleNotificationsPress}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.quickIcon, { backgroundColor: 'rgba(224, 144, 16, 0.15)' }]}>
+              <Ionicons name="notifications-outline" size={22} color="#E09010" />
+            </View>
+            <View style={styles.quickInfo}>
+              <Text style={styles.quickLabel}>Notifications</Text>
+              <Text style={styles.quickSub}>
+                {unreadCount === 0
+                  ? 'No new updates'
+                  : unreadCount === 1
+                  ? '1 unread message'
+                  : `${unreadCount} unread messages`}
+              </Text>
+            </View>
+            <View style={[styles.countBadge, { backgroundColor: unreadCount > 0 ? '#E09010' : '#E5E7EB' }]}>
+              <Text style={[styles.countText, { color: unreadCount > 0 ? '#000000' : '#9CA3AF' }]}>
+                {unreadCount}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#D1D5DB" style={styles.chevron} />
+          </TouchableOpacity>
+
+          {/* My Vehicles */}
+          <TouchableOpacity
+            style={[styles.quickCard, { borderLeftColor: '#E09010' }]}
+            onPress={() => navigation.navigate('Profile')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.quickIcon, { backgroundColor: 'rgba(224, 144, 16, 0.15)' }]}>
+              <Ionicons name="car-outline" size={22} color="#E09010" />
+            </View>
+            <View style={styles.quickInfo}>
+              <Text style={styles.quickLabel}>My Vehicles</Text>
+              <Text style={styles.quickSub}>
+                {vehicleCount === 0
+                  ? 'No vehicles on file'
+                  : vehicleCount === 1
+                  ? '1 vehicle on file'
+                  : `${vehicleCount} vehicles on file`}
+              </Text>
+            </View>
+            <View style={[styles.countBadge, { backgroundColor: vehicleCount > 0 ? '#E09010' : '#E5E7EB' }]}>
+              <Text style={[styles.countText, { color: vehicleCount > 0 ? '#000000' : '#9CA3AF' }]}>
+                {vehicleCount}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#D1D5DB" style={styles.chevron} />
+          </TouchableOpacity>
         </View>
 
         {/* Services */}
